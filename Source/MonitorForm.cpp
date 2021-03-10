@@ -37,7 +37,7 @@ MonitorForm::MonitorForm ()
     juce__textButton2->setButtonText (juce::CharPointer_UTF8 ("\xe8\xbe\x93\xe5\x85\xa5\xe5\xa7\x93\xe5\x90\x8d"));
     juce__textButton2->addListener (this);
 
-    juce__textButton2->setBounds (56, 64, 150, 24);
+    juce__textButton2->setBounds (64, 24, 150, 24);
 
     juce__textEditor.reset (new juce::TextEditor ("new text editor"));
     addAndMakeVisible (juce__textEditor.get());
@@ -49,7 +49,7 @@ MonitorForm::MonitorForm ()
     juce__textEditor->setPopupMenuEnabled (true);
     juce__textEditor->setText (juce::String());
 
-    juce__textEditor->setBounds (224, 64, 150, 24);
+    juce__textEditor->setBounds (248, 24, 264, 24);
 
 
     //[UserPreSize]
@@ -132,10 +132,10 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="600" initialHeight="400">
   <BACKGROUND backgroundColour="ff323e44"/>
   <TEXTBUTTON name="new button" id="bbe42b9b1ace2f6f" memberName="juce__textButton2"
-              virtualName="" explicitFocusOrder="0" pos="56 64 150 24" buttonText="&#36755;&#20837;&#22995;&#21517;"
+              virtualName="" explicitFocusOrder="0" pos="64 24 150 24" buttonText="&#36755;&#20837;&#22995;&#21517;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="new text editor" id="57ef1ed053624b50" memberName="juce__textEditor"
-              virtualName="" explicitFocusOrder="0" pos="224 64 150 24" initialText=""
+              virtualName="" explicitFocusOrder="0" pos="248 24 264 24" initialText=""
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
 </JUCER_COMPONENT>

@@ -5,12 +5,11 @@
   <MAINGROUP id="fZWe8e" name="stickMark2">
     <GROUP id="{534EE7C8-D249-9C82-5C8F-EA0D19056BFB}" name="Source">
       <FILE id="LLfAoU" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="gggjWL" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="ah06ij" name="MainComponent.cpp" compile="1" resource="0"
-            file="Source/MainComponent.cpp"/>
     </GROUP>
     <FILE id="hpbQdk" name="MonitorForm.cpp" compile="1" resource="0" file="Source/MonitorForm.cpp"/>
     <FILE id="cjcESM" name="MonitorForm.h" compile="0" resource="0" file="Source/MonitorForm.h"/>
+    <FILE id="Ix71ch" name="MonitorMenu.cpp" compile="1" resource="0" file="Source/MonitorMenu.cpp"/>
+    <FILE id="EkrqqQ" name="MonitorMenu.h" compile="0" resource="0" file="Source/MonitorMenu.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
