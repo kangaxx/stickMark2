@@ -8,6 +8,7 @@
 
 #include <JuceHeader.h>
 #include "MonitorForm.h"
+
 //==============================================================================
 class stickMark2Application  : public juce::JUCEApplication
 {
@@ -25,7 +26,8 @@ public:
         // This method is where you should put your application's initialisation code..
         juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypefaceName(L"SimHei");
 
-        mainWindow.reset (new MainWindow (getApplicationName()));
+        //mainWindow.reset (new MainWindow (getApplicationName()));
+        mainWindow.reset (new MainWindow (juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe7\xae\xa1\xe7\x90\x86\xe7\xb3\xbb\xe7\xbb\x9f"), new MonitorForm, *this));
     }
 
     void shutdown() override
@@ -58,19 +60,20 @@ public:
     class MainWindow    : public juce::DocumentWindow
     {
     public:
-        MainWindow (juce::String name)
-            : DocumentWindow (name,
-                              juce::Desktop::getInstance().getDefaultLookAndFeel()
-                                                          .findColour (juce::ResizableWindow::backgroundColourId),
-                              DocumentWindow::allButtons)
+        MainWindow (const juce::String& name, juce::Component* c, JUCEApplication& a)
+            : DocumentWindow (name, juce::Desktop::getInstance().getDefaultLookAndFeel()
+                                                                .findColour (ResizableWindow::backgroundColourId),
+                              juce::DocumentWindow::allButtons),
+              app (a)
         {
-            setUsingNativeTitleBar (true);
-            setContentOwned (new MonitorForm(), true);
+            setUsingNativeTitleBar (false);
+            setContentOwned (c, true);
 
-           #if JUCE_IOS || JUCE_ANDROID
+           #if JUCE_ANDROID || JUCE_IOS
             setFullScreen (true);
            #else
-            setResizable (true, true);
+            setResizable (true, false);
+            setResizeLimits (300, 250, 10000, 10000);
             centreWithSize (getWidth(), getHeight());
            #endif
 
@@ -93,6 +96,7 @@ public:
         */
 
     private:
+        JUCEApplication& app;
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
 

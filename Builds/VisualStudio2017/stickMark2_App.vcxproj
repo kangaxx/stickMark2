@@ -74,7 +74,7 @@
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -115,7 +115,7 @@
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -140,8 +140,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Main.cpp"/>
+    <ClCompile Include="..\..\Source\ConfigureForm.cpp"/>
     <ClCompile Include="..\..\Source\MonitorForm.cpp"/>
-    <ClCompile Include="..\..\Source\MonitorMenu.cpp"/>
     <ClCompile Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -1247,8 +1247,18 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_basics.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\hds\clscli.h"/>
+    <ClInclude Include="..\..\hds\common.h"/>
+    <ClInclude Include="..\..\hds\commonfunction_c.h"/>
+    <ClInclude Include="..\..\hds\commonplug.h"/>
+    <ClInclude Include="..\..\hds\commonplug_global.h"/>
+    <ClInclude Include="..\..\hds\FastDelegate.h"/>
+    <ClInclude Include="..\..\hds\geoimagebasefunction.h"/>
+    <ClInclude Include="..\..\hds\jobcontrol.h"/>
+    <ClInclude Include="..\..\hds\netmessage.h"/>
+    <ClInclude Include="..\..\hds\sqlfunctions.h"/>
+    <ClInclude Include="..\..\Source\ConfigureForm.h"/>
     <ClInclude Include="..\..\Source\MonitorForm.h"/>
-    <ClInclude Include="..\..\Source\MonitorMenu.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_Array.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_ArrayAllocationBase.h"/>

@@ -2,6 +2,9 @@
 
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="stickMark2\hds">
+      <UniqueIdentifier>{041CF7D6-9730-387B-82CB-E88630130BBA}</UniqueIdentifier>
+    </Filter>
     <Filter Include="stickMark2\Source">
       <UniqueIdentifier>{B713F9F9-200E-7BB8-4DB5-A1F80E5C6BC4}</UniqueIdentifier>
     </Filter>
@@ -205,10 +208,10 @@
     <ClCompile Include="..\..\Source\Main.cpp">
       <Filter>stickMark2\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\MonitorForm.cpp">
+    <ClCompile Include="..\..\Source\ConfigureForm.cpp">
       <Filter>stickMark2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\MonitorMenu.cpp">
+    <ClCompile Include="..\..\Source\MonitorForm.cpp">
       <Filter>stickMark2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.cpp">
@@ -1392,10 +1395,40 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\MonitorForm.h">
+    <ClInclude Include="..\..\hds\clscli.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\common.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\commonfunction_c.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\commonplug.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\commonplug_global.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\FastDelegate.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\geoimagebasefunction.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\jobcontrol.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\netmessage.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hds\sqlfunctions.h">
+      <Filter>stickMark2\hds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ConfigureForm.h">
       <Filter>stickMark2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\MonitorMenu.h">
+    <ClInclude Include="..\..\Source\MonitorForm.h">
       <Filter>stickMark2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.h">
