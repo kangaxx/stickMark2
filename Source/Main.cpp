@@ -7,8 +7,7 @@
 */
 
 #include <JuceHeader.h>
-#include "MainComponent.h"
-
+#include "MonitorForm.h"
 //==============================================================================
 class stickMark2Application  : public juce::JUCEApplication
 {
@@ -24,6 +23,7 @@ public:
     void initialise (const juce::String& commandLine) override
     {
         // This method is where you should put your application's initialisation code..
+        juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypefaceName(L"SimHei");
 
         mainWindow.reset (new MainWindow (getApplicationName()));
     }
@@ -65,7 +65,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (new MonitorForm(), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);

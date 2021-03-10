@@ -9,6 +9,8 @@
       <FILE id="ah06ij" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
     </GROUP>
+    <FILE id="hpbQdk" name="MonitorForm.cpp" compile="1" resource="0" file="Source/MonitorForm.cpp"/>
+    <FILE id="cjcESM" name="MonitorForm.h" compile="0" resource="0" file="Source/MonitorForm.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
