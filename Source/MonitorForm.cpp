@@ -197,9 +197,12 @@ MonitorForm::MonitorForm ()
 
 
     //[UserPreSize]
-    gridMain.reset(new tzGrid());
+	//gridMain->setTitles(7, L"名称", L"启动", L"状态", L"警告信息", L"贴标机个数", L"贴标机信号数", L"感应到的标签数");
+	gridMain.reset(new tzGrid());
+	gridMain->setTitles(4, L"名称", L"启动", L"状态", L"警告信息");
+	gridMain->setRowNum(4);
     addAndMakeVisible(gridMain.get());
-    gridMain->setBounds(80, 500, 130, 500);
+    gridMain->setBounds(8, 100, 814, 560);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -208,6 +211,7 @@ MonitorForm::MonitorForm ()
     //[Constructor] You can add your own custom stuff here..
     configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
+	setSize (830, 700);
     //[/Constructor]
 }
 

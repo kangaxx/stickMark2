@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include<cstdarg>
 #include <JuceHeader.h>
 #include "CompnentUtilities.h"
 using namespace juce;
@@ -34,6 +35,8 @@ struct tzGrid   : public Component
         addGridItemPanel (Colours::white,      "11");
 
         setSize (750, 750);
+		columnNum = 0;
+		rowNum = 0;
     }
 
     void addGridItemPanel (Colour colour, const char* text)
@@ -46,6 +49,57 @@ struct tzGrid   : public Component
         g.fillAll (Colours::black);
     }
 
+	void setTitles(int count, ...)
+	{
+		va_list arg_ptr;
+		va_start(arg_ptr, count);
+		if (count > 0)
+			isShowTitle = true;
+		//ui控件需要用智能指针管理，不能直接清空，所以考虑多次set的可能，需要看看是否需要重置内容
+		int i = 0;
+		for (i; i < this->titles.size(); ++i)
+			this->titles.set(i, va_arg(arg_ptr, wchar_t*));
+
+		for (i; i < count; ++i)
+			this->titles.add(va_arg(arg_ptr, wchar_t*));
+		va_end(arg_ptr);
+	}
+
+	void setTitles(StringArray titles)
+	{
+		if (titles.size() > 0)
+			isShowTitle = true;
+		int i = 0;
+		for (i; i < this->titles.size(); ++i)
+			this->titles.set(i, titles[i]);
+
+		for (i; i < titles.size(); ++i)
+			this->titles.add(titles[i]);
+	}
+
+	int getColumNum()
+	{
+		if (this->isShowTitle)
+			return this->titles.size();
+		else
+			return columnNum;
+	}
+
+	void setRowNum(int rowNum)
+	{
+		if (rowNum > 0)
+		{
+			this->rowNum = rowNum;
+			if (this->isShowTitle)
+				++this->rowNum;
+		}
+	}
+
+	int getRowNum()
+	{
+		return rowNum;
+	}
+
     void resized() override
     {
         Grid grid;
@@ -55,11 +109,20 @@ struct tzGrid   : public Component
 
         using Track = Grid::TrackInfo;
 
-        grid.templateRows = { Track (1_fr), Track (1_fr), Track (1_fr) };
 
-        grid.templateColumns = { Track (1_fr),
-                                 Track (1_fr),
-                                 Track (1_fr) };
+
+		//根据titles设置列数
+		for (int i = 0; i < getColumNum(); ++i)
+		{
+			grid.templateColumns.add(Track(1_fr));
+		}
+
+		for (int i = 0; i < getRowNum(); ++i)
+		{
+			grid.templateRows.add(Track(1_fr));
+		}
+		//grid.templateRows = { Track(1_fr), Track(1_fr), Track(1_fr) };
+        //grid.templateColumns = { Track (1_fr),Track (1_fr),Track (1_fr) };
 
 
         grid.autoColumns = Track (1_fr);
@@ -105,4 +168,10 @@ struct tzGrid   : public Component
     };
 
     OwnedArray<GridItemPanel> items;
+private:
+	int columnNum = 0;
+	int rowNum = 0; 
+	//grid第一行默认是title，可以隐藏
+	bool isShowTitle = true;
+	StringArray titles;
 };
