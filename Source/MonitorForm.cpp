@@ -183,6 +183,7 @@ MonitorForm::MonitorForm ()
     txtPlcStatus->setScrollbarsShown (true);
     txtPlcStatus->setCaretVisible (true);
     txtPlcStatus->setPopupMenuEnabled (true);
+    txtPlcStatus->setColour (juce::TextEditor::shadowColourId, juce::Colours::yellow);
     txtPlcStatus->setText (juce::CharPointer_UTF8 ("\xe6\x9c\xaa\xe8\xbf\x9e\xe6\x8e\xa5"));
 
     txtPlcStatus->setBounds (400, 48, 95, 24);
@@ -197,9 +198,17 @@ MonitorForm::MonitorForm ()
 
 
     //[UserPreSize]
-	//gridMain->setTitles(7, L"名称", L"启动", L"状态", L"警告信息", L"贴标机个数", L"贴标机信号数", L"感应到的标签数");
 	gridMain.reset(new tzGrid());
-	gridMain->setTitles(4, L"名称", L"启动", L"状态", L"警告信息");
+	gridMain->setBackgroudColour(juce::Colour(0xff323e44));
+	StringArray strings;
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\x90\x8d\xe7\xa7\xb0"), 120.0); //设备
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\xbc\x80\xe5\x85\xb3"), 80.0);  //开关
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe7\x8a\xb6\xe6\x80\x81"), 160.0); //状态
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xad\xa6\xe5\x91\x8a\xe4\xbf\xa1\xe6\x81\xaf"), 280.0); //警告信息
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xb8\xaa\xe6\x95\xb0"), 100.0); // 贴标机个数
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xbf\xa1\xe5\x8f\xb7\xe6\x95\xb0"), 100.0); // 贴标机信号数
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe6\x84\x9f\xe5\xba\x94\xe6\xa0\x87\xe7\xad\xbe\xe6\x95\xb0"), 100.0); // 感应标签数
+	
 	gridMain->setRowNum(4);
     addAndMakeVisible(gridMain.get());
     gridMain->setBounds(8, 100, 814, 560);
@@ -406,9 +415,9 @@ BEGIN_JUCER_METADATA
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <TEXTEDITOR name="new text editor" id="d8ae457465e46dec" memberName="txtPlcStatus"
-              virtualName="" explicitFocusOrder="0" pos="400 48 95 24" initialText="&#26410;&#36830;&#25509;"
-              multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
-              caret="1" popupmenu="1"/>
+              virtualName="" explicitFocusOrder="0" pos="400 48 95 24" shadowcol="ffffff00"
+              initialText="&#26410;&#36830;&#25509;" multiline="0" retKeyStartsLine="0"
+              readonly="0" scrollbars="1" caret="1" popupmenu="1"/>
   <TEXTBUTTON name="new button" id="5c020d9ff9fc23fa" memberName="btnPlcConnect"
               virtualName="" explicitFocusOrder="0" pos="192 48 95 24" bgColOff="ffff0000"
               buttonText="&#36830;&#25509;PLC" connectedEdges="0" needsCallback="1"
