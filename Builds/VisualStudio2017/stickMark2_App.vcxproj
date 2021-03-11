@@ -1257,8 +1257,10 @@
     <ClInclude Include="..\..\hds\jobcontrol.h"/>
     <ClInclude Include="..\..\hds\netmessage.h"/>
     <ClInclude Include="..\..\hds\sqlfunctions.h"/>
+    <ClInclude Include="..\..\Source\CompnentUtilities.h"/>
     <ClInclude Include="..\..\Source\ConfigureForm.h"/>
     <ClInclude Include="..\..\Source\MonitorForm.h"/>
+    <ClInclude Include="..\..\Source\TzGrid.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_Array.h"/>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_ArrayAllocationBase.h"/>

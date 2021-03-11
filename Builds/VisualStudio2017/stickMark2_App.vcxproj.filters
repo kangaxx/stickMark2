@@ -1425,10 +1425,16 @@
     <ClInclude Include="..\..\hds\sqlfunctions.h">
       <Filter>stickMark2\hds</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\CompnentUtilities.h">
+      <Filter>stickMark2</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\ConfigureForm.h">
       <Filter>stickMark2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\MonitorForm.h">
+      <Filter>stickMark2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\TzGrid.h">
       <Filter>stickMark2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.h">

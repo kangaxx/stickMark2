@@ -22,11 +22,14 @@
     <GROUP id="{534EE7C8-D249-9C82-5C8F-EA0D19056BFB}" name="Source">
       <FILE id="LLfAoU" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
     </GROUP>
+    <FILE id="cCjwIU" name="CompnentUtilities.h" compile="0" resource="0"
+          file="Source/CompnentUtilities.h"/>
     <FILE id="YjuIQU" name="ConfigureForm.cpp" compile="1" resource="0"
           file="Source/ConfigureForm.cpp"/>
     <FILE id="e2QZVP" name="ConfigureForm.h" compile="0" resource="0" file="Source/ConfigureForm.h"/>
     <FILE id="pY9UqW" name="MonitorForm.cpp" compile="1" resource="0" file="Source/MonitorForm.cpp"/>
     <FILE id="A8IszS" name="MonitorForm.h" compile="0" resource="0" file="Source/MonitorForm.h"/>
+    <FILE id="kG2aeZ" name="TzGrid.h" compile="0" resource="0" file="Source/TzGrid.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>

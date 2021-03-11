@@ -66,6 +66,19 @@ private:
     std::unique_ptr<juce::Label> lblPrint_2;
     std::unique_ptr<juce::Label> lblPrintValue_2;
     std::unique_ptr<juce::TextButton> btnResetPlc;
+    std::unique_ptr<juce::Label> lblPrint_3;
+    std::unique_ptr<juce::Label> lblPrintValue_3;
+    std::unique_ptr<juce::Label> lblPrint_4;
+    std::unique_ptr<juce::Label> lblPrintValue_4;
+    std::unique_ptr<juce::TextButton> btnResetCcd;
+    std::unique_ptr<juce::TextButton> btnNewScroll;
+    std::unique_ptr<juce::Label> lblSendSignal;
+    std::unique_ptr<juce::TextEditor> txtSignal;
+    std::unique_ptr<juce::TextButton> btnSendSignal;
+    std::unique_ptr<juce::TextButton> btnSetEa;
+    std::unique_ptr<juce::Label> lblSendSignal2;
+    std::unique_ptr<juce::TextEditor> txtSetEa;
+    std::unique_ptr<juce::TextButton> btnReconfig;
 
 
     //==============================================================================

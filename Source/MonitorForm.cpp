@@ -37,35 +37,35 @@ MonitorForm::MonitorForm ()
     btnConfigure->setButtonText (juce::CharPointer_UTF8 ("\xe5\x88\x9d\xe5\xa7\x8b\xe8\xae\xbe\xe7\xbd\xae"));
     btnConfigure->addListener (this);
 
-    btnConfigure->setBounds (8, 8, 150, 24);
+    btnConfigure->setBounds (8, 8, 136, 24);
 
     btnWarning.reset (new juce::TextButton ("btnWarning"));
     addAndMakeVisible (btnWarning.get());
     btnWarning->setButtonText (juce::CharPointer_UTF8 ("\xe6\x8a\xa5\xe8\xad\xa6\xe9\x87\x8d\xe7\xbd\xae"));
     btnWarning->addListener (this);
 
-    btnWarning->setBounds (160, 8, 150, 24);
+    btnWarning->setBounds (144, 8, 136, 24);
 
     btnClearNum.reset (new juce::TextButton ("btnClearNum"));
     addAndMakeVisible (btnClearNum.get());
     btnClearNum->setButtonText (juce::CharPointer_UTF8 ("\xe8\xae\xa1\xe6\x95\xb0\xe6\xb8\x85\xe9\x9b\xb6"));
     btnClearNum->addListener (this);
 
-    btnClearNum->setBounds (312, 8, 150, 24);
+    btnClearNum->setBounds (280, 8, 136, 24);
 
     btnReset.reset (new juce::TextButton ("btnReset"));
     addAndMakeVisible (btnReset.get());
     btnReset->setButtonText (juce::CharPointer_UTF8 ("\xe4\xb8\x80\xe9\x94\xae\xe5\xa4\x8d\xe4\xbd\x8d"));
     btnReset->addListener (this);
 
-    btnReset->setBounds (464, 8, 150, 24);
+    btnReset->setBounds (416, 8, 136, 24);
 
     btnHelp.reset (new juce::TextButton ("btnHelp"));
     addAndMakeVisible (btnHelp.get());
     btnHelp->setButtonText (juce::CharPointer_UTF8 ("\xe5\xb8\xae\xe5\x8a\xa9"));
     btnHelp->addListener (this);
 
-    btnHelp->setBounds (616, 8, 150, 24);
+    btnHelp->setBounds (552, 8, 136, 24);
 
     lblPlc.reset (new juce::Label ("lblPlc",
                                    juce::CharPointer_UTF8 ("PLC\xe8\xbf\x9e\xe6\x8e\xa5\xe7\x8a\xb6\xe6\x80\x81")));
@@ -76,7 +76,7 @@ MonitorForm::MonitorForm ()
     lblPlc->setColour (juce::TextEditor::textColourId, juce::Colours::black);
     lblPlc->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0x00000000));
 
-    lblPlc->setBounds (16, 48, 104, 24);
+    lblPlc->setBounds (296, 48, 104, 24);
 
     btnIp.reset (new juce::ImageButton ("btnIp"));
     addAndMakeVisible (btnIp.get());
@@ -87,7 +87,7 @@ MonitorForm::MonitorForm ()
                       juce::Image(), 1.000f, juce::Colour (0x00000000),
                       juce::Image(), 1.000f, juce::Colour (0x00000000),
                       juce::Image(), 1.000f, juce::Colour (0x00000000));
-    btnIp->setBounds (200, 48, 32, 24);
+    btnIp->setBounds (536, 48, 32, 24);
 
     lblIp.reset (new juce::Label ("lblIp",
                                   TRANS("IP")));
@@ -98,7 +98,7 @@ MonitorForm::MonitorForm ()
     lblIp->setColour (juce::TextEditor::textColourId, juce::Colours::black);
     lblIp->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0x00000000));
 
-    lblIp->setBounds (152, 48, 32, 24);
+    lblIp->setBounds (496, 48, 32, 24);
 
     btnPort.reset (new juce::ImageButton ("btnPort"));
     addAndMakeVisible (btnPort.get());
@@ -109,7 +109,7 @@ MonitorForm::MonitorForm ()
                         juce::Image(), 1.000f, juce::Colour (0x00000000),
                         juce::Image(), 1.000f, juce::Colour (0x00000000),
                         juce::Image(), 1.000f, juce::Colour (0x00000000));
-    btnPort->setBounds (312, 48, 32, 24);
+    btnPort->setBounds (608, 48, 32, 24);
 
     lblPort.reset (new juce::Label ("lblPort",
                                     TRANS("PORT")));
@@ -120,7 +120,7 @@ MonitorForm::MonitorForm ()
     lblPort->setColour (juce::TextEditor::textColourId, juce::Colours::black);
     lblPort->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0x00000000));
 
-    lblPort->setBounds (248, 48, 32, 24);
+    lblPort->setBounds (568, 48, 32, 24);
 
     lblWarnNum.reset (new juce::Label ("lblWarnNum",
                                        juce::CharPointer_UTF8 ("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x8a\xa5\xe8\xad\xa6\xe6\x95\xb0\xe7\x9b\xae")));
@@ -131,7 +131,7 @@ MonitorForm::MonitorForm ()
     lblWarnNum->setColour (juce::TextEditor::textColourId, juce::Colours::black);
     lblWarnNum->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0x00000000));
 
-    lblWarnNum->setBounds (368, 48, 112, 24);
+    lblWarnNum->setBounds (640, 48, 112, 24);
 
     txtWarnNum.reset (new juce::TextEditor ("txtWarnNum"));
     addAndMakeVisible (txtWarnNum.get());
@@ -141,12 +141,65 @@ MonitorForm::MonitorForm ()
     txtWarnNum->setScrollbarsShown (true);
     txtWarnNum->setCaretVisible (true);
     txtWarnNum->setPopupMenuEnabled (true);
-    txtWarnNum->setText (juce::String());
+    txtWarnNum->setText (TRANS("0"));
 
-    txtWarnNum->setBounds (488, 48, 150, 24);
+    txtWarnNum->setBounds (760, 48, 56, 24);
+
+    btnSave.reset (new juce::TextButton ("btnHelp"));
+    addAndMakeVisible (btnSave.get());
+    btnSave->setButtonText (juce::CharPointer_UTF8 ("\xe4\xbf\x9d\xe5\xad\x98"));
+    btnSave->addListener (this);
+
+    btnSave->setBounds (688, 8, 136, 24);
+
+    lblPlc2.reset (new juce::Label ("lblPlc",
+                                    juce::CharPointer_UTF8 ("\xe8\xb4\xb4\xe6\xa0\x87\xe4\xbf\xa1\xe6\x81\xaf")));
+    addAndMakeVisible (lblPlc2.get());
+    lblPlc2->setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
+    lblPlc2->setJustificationType (juce::Justification::centredLeft);
+    lblPlc2->setEditable (false, false, false);
+    lblPlc2->setColour (juce::TextEditor::textColourId, juce::Colours::black);
+    lblPlc2->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0x00000000));
+
+    lblPlc2->setBounds (8, 48, 80, 24);
+
+    txtWarnNum2.reset (new juce::TextEditor ("txtWarnNum"));
+    addAndMakeVisible (txtWarnNum2.get());
+    txtWarnNum2->setMultiLine (false);
+    txtWarnNum2->setReturnKeyStartsNewLine (false);
+    txtWarnNum2->setReadOnly (false);
+    txtWarnNum2->setScrollbarsShown (true);
+    txtWarnNum2->setCaretVisible (true);
+    txtWarnNum2->setPopupMenuEnabled (true);
+    txtWarnNum2->setText (TRANS("0"));
+
+    txtWarnNum2->setBounds (80, 48, 88, 24);
+
+    txtPlcStatus.reset (new juce::TextEditor ("new text editor"));
+    addAndMakeVisible (txtPlcStatus.get());
+    txtPlcStatus->setMultiLine (false);
+    txtPlcStatus->setReturnKeyStartsNewLine (false);
+    txtPlcStatus->setReadOnly (false);
+    txtPlcStatus->setScrollbarsShown (true);
+    txtPlcStatus->setCaretVisible (true);
+    txtPlcStatus->setPopupMenuEnabled (true);
+    txtPlcStatus->setText (juce::CharPointer_UTF8 ("\xe6\x9c\xaa\xe8\xbf\x9e\xe6\x8e\xa5"));
+
+    txtPlcStatus->setBounds (400, 48, 95, 24);
+
+    btnPlcConnect.reset (new juce::TextButton ("new button"));
+    addAndMakeVisible (btnPlcConnect.get());
+    btnPlcConnect->setButtonText (juce::CharPointer_UTF8 ("\xe8\xbf\x9e\xe6\x8e\xa5PLC"));
+    btnPlcConnect->addListener (this);
+    btnPlcConnect->setColour (juce::TextButton::buttonColourId, juce::Colours::red);
+
+    btnPlcConnect->setBounds (192, 48, 95, 24);
 
 
     //[UserPreSize]
+    gridMain.reset(new tzGrid());
+    addAndMakeVisible(gridMain.get());
+    gridMain->setBounds(80, 500, 130, 500);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -175,17 +228,17 @@ MonitorForm::~MonitorForm()
     lblPort = nullptr;
     lblWarnNum = nullptr;
     txtWarnNum = nullptr;
+    btnSave = nullptr;
+    lblPlc2 = nullptr;
+    txtWarnNum2 = nullptr;
+    txtPlcStatus = nullptr;
+    btnPlcConnect = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
     delete configureForm;
     configureForm = nullptr;
     //[/Destructor]
-}
-
-void MonitorForm::resetPlc(std::string window, std::string message)
-{
-	juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon, window, message);
 }
 
 //==============================================================================
@@ -250,6 +303,16 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
         //[UserButtonCode_btnPort] -- add your button handler code here..
         //[/UserButtonCode_btnPort]
     }
+    else if (buttonThatWasClicked == btnSave.get())
+    {
+        //[UserButtonCode_btnSave] -- add your button handler code here..
+        //[/UserButtonCode_btnSave]
+    }
+    else if (buttonThatWasClicked == btnPlcConnect.get())
+    {
+        //[UserButtonCode_btnPlcConnect] -- add your button handler code here..
+        //[/UserButtonCode_btnPlcConnect]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -276,56 +339,76 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="600" initialHeight="400">
   <BACKGROUND backgroundColour="ff323e44"/>
   <TEXTBUTTON name="btnConfigure" id="dea7d10815db584d" memberName="btnConfigure"
-              virtualName="" explicitFocusOrder="0" pos="8 8 150 24" buttonText="&#21021;&#22987;&#35774;&#32622;"
+              virtualName="" explicitFocusOrder="0" pos="8 8 136 24" buttonText="&#21021;&#22987;&#35774;&#32622;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="btnWarning" id="2672d195d9f55e8f" memberName="btnWarning"
-              virtualName="" explicitFocusOrder="0" pos="160 8 150 24" buttonText="&#25253;&#35686;&#37325;&#32622;"
+              virtualName="" explicitFocusOrder="0" pos="144 8 136 24" buttonText="&#25253;&#35686;&#37325;&#32622;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="btnClearNum" id="e1d41ce7833739f3" memberName="btnClearNum"
-              virtualName="" explicitFocusOrder="0" pos="312 8 150 24" buttonText="&#35745;&#25968;&#28165;&#38646;"
+              virtualName="" explicitFocusOrder="0" pos="280 8 136 24" buttonText="&#35745;&#25968;&#28165;&#38646;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="btnReset" id="1353b063f8d1529e" memberName="btnReset" virtualName=""
-              explicitFocusOrder="0" pos="464 8 150 24" buttonText="&#19968;&#38190;&#22797;&#20301;"
+              explicitFocusOrder="0" pos="416 8 136 24" buttonText="&#19968;&#38190;&#22797;&#20301;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="btnHelp" id="e2be261bd0fa423e" memberName="btnHelp" virtualName=""
-              explicitFocusOrder="0" pos="616 8 150 24" buttonText="&#24110;&#21161;"
+              explicitFocusOrder="0" pos="552 8 136 24" buttonText="&#24110;&#21161;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="lblPlc" id="b9d5aab725191297" memberName="lblPlc" virtualName=""
-         explicitFocusOrder="0" pos="16 48 104 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="296 48 104 24" edTextCol="ff000000"
          edBkgCol="0" labelText="PLC&#36830;&#25509;&#29366;&#24577;"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
          italic="0" justification="33"/>
   <IMAGEBUTTON name="btnIp" id="43b14e2d1802a28f" memberName="btnIp" virtualName=""
-               explicitFocusOrder="0" pos="200 48 32 24" buttonText="" connectedEdges="0"
+               explicitFocusOrder="0" pos="536 48 32 24" buttonText="" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal=""
                opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="1.0"
                colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <LABEL name="lblIp" id="c1c0cc739817ca48" memberName="lblIp" virtualName=""
-         explicitFocusOrder="0" pos="152 48 32 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="496 48 32 24" edTextCol="ff000000"
          edBkgCol="0" labelText="IP" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <IMAGEBUTTON name="btnPort" id="b213410f39bb611d" memberName="btnPort" virtualName=""
-               explicitFocusOrder="0" pos="312 48 32 24" buttonText="" connectedEdges="0"
+               explicitFocusOrder="0" pos="608 48 32 24" buttonText="" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal=""
                opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="1.0"
                colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <LABEL name="lblPort" id="8da4ab8246d7947f" memberName="lblPort" virtualName=""
-         explicitFocusOrder="0" pos="248 48 32 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="568 48 32 24" edTextCol="ff000000"
          edBkgCol="0" labelText="PORT" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <LABEL name="lblWarnNum" id="aa7944596d3f15c4" memberName="lblWarnNum"
-         virtualName="" explicitFocusOrder="0" pos="368 48 112 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="640 48 112 24" edTextCol="ff000000"
          edBkgCol="0" labelText="&#36148;&#26631;&#25253;&#35686;&#25968;&#30446;"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
          italic="0" justification="33"/>
   <TEXTEDITOR name="txtWarnNum" id="ea91343574eb17e6" memberName="txtWarnNum"
-              virtualName="" explicitFocusOrder="0" pos="488 48 150 24" initialText=""
+              virtualName="" explicitFocusOrder="0" pos="760 48 56 24" initialText="0"
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
+  <TEXTBUTTON name="btnHelp" id="87f4b36d4d1f1540" memberName="btnSave" virtualName=""
+              explicitFocusOrder="0" pos="688 8 136 24" buttonText="&#20445;&#23384;"
+              connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <LABEL name="lblPlc" id="2ffc8ee9af202b5" memberName="lblPlc2" virtualName=""
+         explicitFocusOrder="0" pos="8 48 80 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="&#36148;&#26631;&#20449;&#24687;" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="33"/>
+  <TEXTEDITOR name="txtWarnNum" id="47d226b845356873" memberName="txtWarnNum2"
+              virtualName="" explicitFocusOrder="0" pos="80 48 88 24" initialText="0"
+              multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
+              caret="1" popupmenu="1"/>
+  <TEXTEDITOR name="new text editor" id="d8ae457465e46dec" memberName="txtPlcStatus"
+              virtualName="" explicitFocusOrder="0" pos="400 48 95 24" initialText="&#26410;&#36830;&#25509;"
+              multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
+              caret="1" popupmenu="1"/>
+  <TEXTBUTTON name="new button" id="5c020d9ff9fc23fa" memberName="btnPlcConnect"
+              virtualName="" explicitFocusOrder="0" pos="192 48 95 24" bgColOff="ffff0000"
+              buttonText="&#36830;&#25509;PLC" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
