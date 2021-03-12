@@ -82,8 +82,9 @@ private:
     std::unique_ptr<juce::TextEditor> txtWarnNum2;
     std::unique_ptr<juce::TextEditor> txtPlcStatus;
     std::unique_ptr<juce::TextButton> btnPlcConnect;
-
-
+    std::unique_ptr<juce::GroupComponent> groupCommand;
+	StringArray row_data;
+	char rowData[28][2000];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MonitorForm)
 };

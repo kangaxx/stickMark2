@@ -30,6 +30,7 @@
 MonitorForm::MonitorForm ()
 {
     //[Constructor_pre] You can add your own custom stuff here..
+
     //[/Constructor_pre]
 
     btnConfigure.reset (new juce::TextButton ("btnConfigure"));
@@ -196,22 +197,66 @@ MonitorForm::MonitorForm ()
 
     btnPlcConnect->setBounds (192, 48, 95, 24);
 
+    groupCommand.reset (new juce::GroupComponent ("new group",
+                                                  juce::String()));
+    addAndMakeVisible (groupCommand.get());
+
+    groupCommand->setBounds (0, -8, 832, 96);
+
 
     //[UserPreSize]
 	gridMain.reset(new tzGrid());
 	gridMain->setBackgroudColour(juce::Colour(0xff323e44));
-	StringArray strings;
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\x90\x8d\xe7\xa7\xb0"), 120.0); //�豸
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\xbc\x80\xe5\x85\xb3"), 80.0);  //����
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe7\x8a\xb6\xe6\x80\x81"), 160.0); //״̬
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xad\xa6\xe5\x91\x8a\xe4\xbf\xa1\xe6\x81\xaf"), 280.0); //������Ϣ
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xb8\xaa\xe6\x95\xb0"), 100.0); // ���������
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xbf\xa1\xe5\x8f\xb7\xe6\x95\xb0"), 100.0); // ������ź���
-	gridMain->addColoumn(juce::CharPointer_UTF8("\xe6\x84\x9f\xe5\xba\x94\xe6\xa0\x87\xe7\xad\xbe\xe6\x95\xb0"), 100.0); // ��Ӧ��ǩ��
-	
+	gridMain->setRowHeight(80.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\x90\x8d\xe7\xa7\xb0"), 120.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe5\xbc\x80\xe5\x85\xb3"), 80.0, tzGrid::columnComponentType::switchBox, tzGrid::columnDataType::nullColumn);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe7\x8a\xb6\xe6\x80\x81"), 160.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xad\xa6\xe5\x91\x8a\xe4\xbf\xa1\xe6\x81\xaf"), 280.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xb8\xaa\xe6\x95\xb0"), 100.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe4\xbf\xa1\xe5\x8f\xb7\xe6\x95\xb0"), 100.0);
+	gridMain->addColoumn(juce::CharPointer_UTF8("\xe6\x84\x9f\xe5\xba\x94\xe6\xa0\x87\xe7\xad\xbe\xe6\x95\xb0"), 100.0);
 	gridMain->setRowNum(4);
+	//添加行数据
+
+	//第一行数据	
+	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01")); //贴标机 01
+	row_data.add(""); //第二列数据没有text,但是也要留空
+	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	row_data.add("0");
+	row_data.add("0");
+	row_data.add("0");
+
+	//第二行数据
+	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 02")); //贴标机 02
+	row_data.add(""); //第二列数据没有text,但是也要留空
+	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	row_data.add("0");
+	row_data.add("0");
+	row_data.add("0");
+
+	//第三行数据
+	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 03")); //贴标机 03
+	row_data.add(""); //第二列数据没有text,但是也要留空
+	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	row_data.add("0");
+	row_data.add("0");
+	row_data.add("0");
+
+	//第四行数据
+	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 04")); //贴标机 04
+	row_data.add(""); //第二列数据没有text,但是也要留空
+	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	row_data.add(juce::CharPointer_UTF8("\xe6\xbc\x8f\xe6\xa0\x87\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x95\xb4\xe5\xae\x9a\xe5\xa4\xb1\xe8\xb4\xa5\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe7\xb4\xaf\xe5\x8a\xa0\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x96\xad\xe5\xb8\xa6\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xbf\x9e\xe7\xbb\xad\xe6\x89\x93\xe5\x8d\xb0\xe6\x8a\xa5\xe8\xad\xa6")); //无
+	row_data.add("0");
+	row_data.add("0");
+	row_data.add("0");
+	gridMain->addRowData(row_data); //所有数据一起传输
+
     addAndMakeVisible(gridMain.get());
-    gridMain->setBounds(8, 100, 814, 560);
+    gridMain->setBounds(8, 100, 814, 360);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -220,7 +265,7 @@ MonitorForm::MonitorForm ()
     //[Constructor] You can add your own custom stuff here..
     configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
-	setSize (830, 700);
+	setSize (830, 500);
     //[/Constructor]
 }
 
@@ -246,6 +291,7 @@ MonitorForm::~MonitorForm()
     txtWarnNum2 = nullptr;
     txtPlcStatus = nullptr;
     btnPlcConnect = nullptr;
+    groupCommand = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -422,6 +468,8 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="192 48 95 24" bgColOff="ffff0000"
               buttonText="&#36830;&#25509;PLC" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
+  <GROUPCOMPONENT name="new group" id="b7ba15b17c2913df" memberName="groupCommand"
+                  virtualName="" explicitFocusOrder="0" pos="0 -8 832 96" title=""/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
