@@ -222,6 +222,7 @@ public:
     bool isEmpty()const{return head==head->next?true:false;}
     //将元素添加至最后，注意node的指针设置
     void addToLast(const T& element){Node* ne=new Node(element,head->prior,head);}
+	inline void insertToLast(const T& element) { return addToLast(element); }
     //获取最后一个元素
     T getLastElement()const{assert(!isEmpty());return head->prior->data;}
     //删除最后一个元素，注意node的指针设置
@@ -405,6 +406,7 @@ public:
     bool isEmpty()const{return head==head->next?true:false;}
     //将元素添加至最后，注意node的指针设置
     void addToLast(const T* element){new Node(element,head->prior,head);}
+	inline void insertToLast(const T *element) { return addToLast(element); }
     //获取最后一个元素
     const T *getLastElement()const{assert(!isEmpty());return head->prior->data;}
     //删除最后一个元素，注意node的指针设置
@@ -412,8 +414,8 @@ public:
     //修改最后一个元素
     void alterLastEmlent(const T* newElement){assert(!isEmpty());head->prior->data=newElement;}
     //插入元素
-    void insert(T element, int pos){insertElement(element, pos);}
-    void insertElement(T *element, int pos){
+    void insert(T element, int pos = 0){insertElement(element, pos);}
+    void insertElement(T *element, int pos = 0){
         assert(pos >= 0);
         assert(pos < size());
         Node *p = head;

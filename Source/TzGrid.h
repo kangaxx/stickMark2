@@ -13,11 +13,14 @@
 #include<cstdarg>
 #include <JuceHeader.h>
 #include "CompnentUtilities.h"
+#include "../hds/FastDelegate.h"
+using namespace fastdelegate;
 using namespace juce;
 //==============================================================================
 /*
 */
-struct tzGrid : public Component
+struct tzGrid : public Component,
+				public ComboBox::Listener
 {
 	enum columnComponentType
 	{
@@ -36,43 +39,30 @@ struct tzGrid : public Component
 
 	tzGrid()
 	{
-
-
-		//btnTest.reset(new juce::TextButton("btnReset"));
-		//addAndMakeVisible(btnTest.get());
-		//btnTest->setButtonText(juce::CharPointer_UTF8("\xe4\xb8\x80\xe9\x94\xae\xe5\xa4\x8d\xe4\xbd\x8d"));
-		////btnTest->addListener(this);
-
-		//btnTest->setBounds(16, 8, 136, 24);
-
-		//lblWarnNum.reset(new juce::Label("lblWarnNum",
-		//	juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x8a\xa5\xe8\xad\xa6\xe6\x95\xb0\xe7\x9b\xae")));
-		//addAndMakeVisible(lblWarnNum.get());
-		//lblWarnNum->setFont(juce::Font(15.00f, juce::Font::plain).withTypefaceStyle("Regular"));
-		//lblWarnNum->setJustificationType(juce::Justification::centredLeft);
-		//lblWarnNum->setEditable(false, false, false);
-		//lblWarnNum->setColour(juce::TextEditor::textColourId, juce::Colours::black);
-		//lblWarnNum->setColour(juce::TextEditor::outlineColourId, juce::Colours::white);
-		//lblWarnNum->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0x00000000));
-
-		//lblWarnNum->setBounds(46, 48, 112, 24);
-
-		//txtWarnNum.reset(new juce::TextEditor("txtWarnNum"));
-		//addAndMakeVisible(txtWarnNum.get());
-		//txtWarnNum->setMultiLine(false);
-		//txtWarnNum->setReturnKeyStartsNewLine(false);
-		//txtWarnNum->setReadOnly(false);
-		//txtWarnNum->setScrollbarsShown(true);
-		//txtWarnNum->setCaretVisible(true);
-		//txtWarnNum->setPopupMenuEnabled(true);
-		//txtWarnNum->setText(TRANS("0"));
-
-		//txtWarnNum->setBounds(123, 48, 56, 24);
-
-
 		setSize(750, 750);
 		columnNum = 0;
 		rowNum = 0;
+	}
+
+	typedef FastDelegate2<int, int> SIGNAL_II;
+	void setFunctionII(SIGNAL_II somefunc) { m_HiddenDelegateII = somefunc; }
+
+	
+
+	void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
+	{
+		//get this combox row index
+		for (int i = 0; i < rowsComponents.size(); ++i)
+		{
+			if (rowsComponents[i] == comboBoxThatHasChanged)
+			{
+				int rowIdx = 0;
+				rowIdx = ((i - i % getColumNum()) / getColumNum());
+				//AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "combox row idx", String(rowIdx));
+				m_HiddenDelegateII(rowIdx, comboBoxThatHasChanged->getSelectedId());
+				break;
+			}
+		}
 	}
 
 	//add column , with column title ,and width
@@ -178,10 +168,10 @@ struct tzGrid : public Component
 				tmpCombo->setJustificationType(juce::Justification::centredLeft);
 				tmpCombo->setTextWhenNothingSelected(juce::String());
 				tmpCombo->setTextWhenNoChoicesAvailable(TRANS("(no choices)"));
-				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\xbc\x80\xe6\x9c\xba")), 1);
-				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")), 2);
-				//tmpCombo->addListener();
-
+				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")), 1); //1 关机
+				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\xbc\x80\xe6\x9c\xba")), 2);
+				tmpCombo->setSelectedId(1); //默认关机
+				tmpCombo->addListener(this);
 				rowsComponents.add(tmpCombo);
 
 				tmpCombo->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
@@ -363,4 +353,5 @@ private:
 	OwnedArray<TextButton> buttons;
 	OwnedArray<TextButton> titlesButtons;
 	OwnedArray<Component> rowsComponents;
+	SIGNAL_II m_HiddenDelegateII;
 };

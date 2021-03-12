@@ -210,12 +210,14 @@ ConfigureForm::ConfigureForm ()
 
 
     //[UserPreSize]
+
     //[/UserPreSize]
 
     setSize (600, 400);
 
 
     //[Constructor] You can add your own custom stuff here..
+	setSize(700, 400);
     //[/Constructor]
 }
 

@@ -205,6 +205,9 @@ MonitorForm::MonitorForm ()
 
 
     //[UserPreSize]
+
+
+	
 	gridMain.reset(new tzGrid());
 	gridMain->setBackgroudColour(juce::Colour(0xff323e44));
 	gridMain->setRowHeight(80.0);
@@ -218,42 +221,81 @@ MonitorForm::MonitorForm ()
 	gridMain->setRowNum(4);
 	//添加行数据
 
-	//第一行数据	
-	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01")); //贴标机 01
-	row_data.add(""); //第二列数据没有text,但是也要留空
-	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
-	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
-	row_data.add("0");
-	row_data.add("0");
-	row_data.add("0");
+	dataModels = new DuLink<gridDataInfo*>();
+	for (int i = 0; i < MAX_MARKER_NUM; ++i) {
+		static gridDataInfo* tmpData = new gridDataInfo();
+		dataModels->insertToLast(tmpData);
+	}
+
+	//第一行数据
+	((gridDataInfo*)(*dataModels)[0])->setName(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01"));
+	((gridDataInfo*)(*dataModels)[0])->setStatus(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01"));
+	((gridDataInfo*)(*dataModels)[0])->setWarning(juce::CharPointer_UTF8("\xe6\x97\xa0"));
+	((gridDataInfo*)(*dataModels)[0])->setMarkNum(0);
+	((gridDataInfo*)(*dataModels)[0])->setMarkSignalNum(0);
+	((gridDataInfo*)(*dataModels)[0])->setSensorNum(0);
 
 	//第二行数据
-	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 02")); //贴标机 02
-	row_data.add(""); //第二列数据没有text,但是也要留空
-	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
-	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
-	row_data.add("0");
-	row_data.add("0");
-	row_data.add("0");
+	((gridDataInfo*)(*dataModels)[1])->setName(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 02"));
+	((gridDataInfo*)(*dataModels)[1])->setStatus(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 02"));
+	((gridDataInfo*)(*dataModels)[1])->setWarning(juce::CharPointer_UTF8("\xe6\x97\xa0"));
+	((gridDataInfo*)(*dataModels)[1])->setMarkNum(0);
+	((gridDataInfo*)(*dataModels)[1])->setMarkSignalNum(0);
+	((gridDataInfo*)(*dataModels)[1])->setSensorNum(0);
 
 	//第三行数据
-	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 03")); //贴标机 03
-	row_data.add(""); //第二列数据没有text,但是也要留空
-	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
-	row_data.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
-	row_data.add("0");
-	row_data.add("0");
-	row_data.add("0");
+	((gridDataInfo*)(*dataModels)[2])->setName(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 03"));
+	((gridDataInfo*)(*dataModels)[2])->setStatus(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 03"));
+	((gridDataInfo*)(*dataModels)[2])->setWarning(juce::CharPointer_UTF8("\xe6\x97\xa0"));
+	((gridDataInfo*)(*dataModels)[2])->setMarkNum(0);
+	((gridDataInfo*)(*dataModels)[2])->setMarkSignalNum(0);
+	((gridDataInfo*)(*dataModels)[2])->setSensorNum(0);
 
 	//第四行数据
-	row_data.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 04")); //贴标机 04
-	row_data.add(""); //第二列数据没有text,但是也要留空
-	row_data.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
-	row_data.add(juce::CharPointer_UTF8("\xe6\xbc\x8f\xe6\xa0\x87\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x95\xb4\xe5\xae\x9a\xe5\xa4\xb1\xe8\xb4\xa5\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe7\xb4\xaf\xe5\x8a\xa0\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x96\xad\xe5\xb8\xa6\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xbf\x9e\xe7\xbb\xad\xe6\x89\x93\xe5\x8d\xb0\xe6\x8a\xa5\xe8\xad\xa6")); //无
-	row_data.add("0");
-	row_data.add("0");
-	row_data.add("0");
-	gridMain->addRowData(row_data); //所有数据一起传输
+	((gridDataInfo*)(*dataModels)[3])->setName(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 04"));
+	((gridDataInfo*)(*dataModels)[3])->setStatus(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 04"));
+	((gridDataInfo*)(*dataModels)[3])->setWarning(juce::CharPointer_UTF8("\xe6\x97\xa0"));
+	((gridDataInfo*)(*dataModels)[3])->setMarkNum(0);
+	((gridDataInfo*)(*dataModels)[3])->setMarkSignalNum(0);
+	((gridDataInfo*)(*dataModels)[3])->setSensorNum(0);
+
+
+	//第一行数据	
+	rowData.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01")); //贴标机 01
+	rowData.add(""); //第二列数据没有text,但是也要留空
+	rowData.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	rowData.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	rowData.add("0");
+	rowData.add("0");
+	rowData.add("0");
+
+	//第二行数据
+	rowData.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 02")); //贴标机 02
+	rowData.add(""); //第二列数据没有text,但是也要留空
+	rowData.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	rowData.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	rowData.add("0");
+	rowData.add("0");
+	rowData.add("0");
+
+	//第三行数据
+	rowData.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 03")); //贴标机 03
+	rowData.add(""); //第二列数据没有text,但是也要留空
+	rowData.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	rowData.add(juce::CharPointer_UTF8("\xe6\x97\xa0")); //无
+	rowData.add("0");
+	rowData.add("0");
+	rowData.add("0");
+
+	//第四行数据
+	rowData.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 04")); //贴标机 04
+	rowData.add(""); //第二列数据没有text,但是也要留空
+	rowData.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
+	rowData.add(juce::CharPointer_UTF8("\xe6\xbc\x8f\xe6\xa0\x87\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x95\xb4\xe5\xae\x9a\xe5\xa4\xb1\xe8\xb4\xa5\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe7\xb4\xaf\xe5\x8a\xa0\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe6\x96\xad\xe5\xb8\xa6\xe6\x8a\xa5\xe8\xad\xa6\xef\xbc\x9b\xe8\xbf\x9e\xe7\xbb\xad\xe6\x89\x93\xe5\x8d\xb0\xe6\x8a\xa5\xe8\xad\xa6")); //无
+	rowData.add("0");
+	rowData.add("0");
+	rowData.add("0");
+	gridMain->addRowData(rowData); //所有数据一起传输
 
     addAndMakeVisible(gridMain.get());
     gridMain->setBounds(8, 100, 814, 360);
@@ -265,6 +307,7 @@ MonitorForm::MonitorForm ()
     //[Constructor] You can add your own custom stuff here..
     configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
+	gridMain->setFunctionII(MakeDelegate(this, &MonitorForm::switchMarker));
 	setSize (830, 500);
     //[/Constructor]
 }
@@ -297,6 +340,9 @@ MonitorForm::~MonitorForm()
     //[Destructor]. You can add your own custom destruction code here..
     delete configureForm;
     configureForm = nullptr;
+	if (dataModels != NULL) {
+		delete dataModels;
+	}
     //[/Destructor]
 }
 
@@ -374,12 +420,18 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
     }
 
     //[UserbuttonClicked_Post]
+
     //[/UserbuttonClicked_Post]
 }
 
 
 
+
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+StringArray MonitorForm::transModelToString(std::list<gridDataInfo> models)
+{
+	return StringArray();
+}
 //[/MiscUserCode]
 
 
