@@ -262,6 +262,7 @@ struct tzGrid : public Component,
 			case columnComponentType::editReadOnly:
 				tmpText = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
 				tmpText->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				tmpText->setText(text);
 				//next columns left = currentLeft + currentWidth;
 				left += columns[i]->getWidth() * widthScala;
 				break;
@@ -271,13 +272,15 @@ struct tzGrid : public Component,
 				left += columns[i]->getWidth() * widthScala;
 				break;
 			case columnComponentType::editWriteRead:
-				tmpText = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
+				tmpEdit = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
 				tmpEdit->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				tmpEdit->setText(text);
 				left += columns[i]->getWidth() * widthScala;
 				break;
 			default:
 				tmpDefault = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
 				tmpDefault->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				tmpDefault->setText(text);
 				left += columns[i]->getWidth() * widthScala;
 				break;
 			}
