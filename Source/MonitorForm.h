@@ -26,6 +26,8 @@
 #include "tzGrid.h"
 #include "../hds/commonfunction_c.h"
 #define MAX_MARKER_NUM 4
+#define INT_MARKER_SWITCH_OPEN 2
+#define INT_MARKER_SWITCH_CLOSE 2
 using namespace commonfunction_c;
 //[/Headers]
 
@@ -58,6 +60,12 @@ public:
 	void switchMarker(int num, int status)
 	{
 		//AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "switch mark", "mark num : " + String(num) + " ,status : " + String(status));
+		if (status == INT_MARKER_SWITCH_OPEN)
+			updateSwitchStatus(num, juce::CharPointer_UTF8("\xe5\xbc\x80\xe6\x9c\xba"));
+		else
+			updateSwitchStatus(num, juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba"));
+		if (gridMain->isInitialed())
+			redrawGrid();
 	}
     //[/UserMethods]
 
@@ -89,12 +97,16 @@ private:
 		gridDataInfo() { command = ""; }
 
 		void setName(String n) { name = n; }
+		void setCommand(String c) { command = c; }
 		void setStatus(String s) { status = s; }
 		void setWarning(String w) { warning = w; }
 		void setMarkNum(int mn) { markNum = mn; }
 		void setMarkSignalNum(int msn) { markSignalNum = msn; }
 		void setSensorNum(int sn) { sensorNum = sn; }
-
+		void incMarkNum(int num) { markNum += num;  }
+		void incMarkSignalNum(int num) { markSignalNum += num; }
+		void incSendsorNum(int num) { sensorNum += num; }
+		void addWarning(String w) { warning += w; }
 		String getName() { return name; }
 		String getCommand() { return command; }
 		String getStatus() { return status; }
@@ -103,11 +115,13 @@ private:
 		String getMarkSignalNum() { return String(markSignalNum); }
 		String getSensorNum() { return String(sensorNum); }
 
-		void insertWarning(String w) { warning += w; }
+		void insertWarning(String w) { warning = warning + w; }
 	};
 	DuLink<gridDataInfo*> *dataModels = NULL;
 	StringArray rowData;
-	void transModelToString();
+	void insertWarning(int MarkerIndex, String warning);
+	void updateSwitchStatus(int MarkerIndex, String status);
+	void redrawGrid();
     //[/UserVariables]
 
     //==============================================================================

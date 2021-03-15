@@ -83,7 +83,7 @@ struct tzGrid : public Component,
 			throw new String("Error :rowData size error!");
 		//if (getColumNum() * getRowNum() != data->size())
 		//	throw new String("Error :rowData size error!");
-
+		gridData.clear();
 		gridData = data;
 	}
 
@@ -126,6 +126,7 @@ struct tzGrid : public Component,
 		{
 			drawRow(i, gridData);
 		}
+		initialed = true;
 	}
 
 	void drawRow(int rowIdx, StringArray data)
@@ -329,35 +330,14 @@ struct tzGrid : public Component,
 
 		using Track = Grid::TrackInfo;
 
-		for (int i = 0; i < getColumNum(); ++i)
-		{
-			grid.templateColumns.add(Track(1_fr));
-		}
-
-		for (int i = 0; i < getRowNum(); ++i)
-		{
-			grid.templateRows.add(Track(1_fr));
-		}
-		//grid.templateRows = { Track(1_fr), Track(1_fr), Track(1_fr) };
-		//grid.templateColumns = { Track (1_fr),Track (1_fr),Track (1_fr) };
-
-
 		grid.autoColumns = Track(1_fr);
 		grid.autoRows = Track(1_fr);
 
 		grid.autoFlow = Grid::AutoFlow::column;
-		//
-		//grid.items.addArray({ GridItem(rows[0]),
-		//			   GridItem(rows[1]),
-		//			   GridItem(rows[2]),
-		//			   GridItem(rows[3]),
-		//	GridItem(rows[4])
-		//				
-		//});
 
-		//grid.performLayout (getLocalBounds());
 		redrawTitles();
 		redrawRows();
+
 	}
 
 	//==============================================================================
@@ -413,6 +393,7 @@ struct tzGrid : public Component,
 	void setTitleHeight(float h) { this->titleHeight = h; }
 	float getBordSize() { return gridBordSize; }
 	void setBordSize(float v) { gridBordSize = v; }
+	bool isInitialed() { return initialed; }
 private:
 	int columnNum = 0;
 	int rowNum = 0;
@@ -433,4 +414,6 @@ private:
 	OwnedArray<TextButton> titlesButtons;
 	OwnedArray<Component> rowsComponents;
 	SIGNAL_II m_HiddenDelegateII;
+	bool initialed = false; //第一次draw控件时会更改初始化状态
+	
 };
