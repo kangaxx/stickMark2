@@ -15,7 +15,7 @@
 #include "InterConnection.h"
 #include <vector>
 #include <list>
-using namespace std;
+
 
 //#pragma pack(8)
 //#pragma pack()
@@ -86,7 +86,7 @@ public:
 	Time	_tTime;			// 时间
 	float	_fBase;			// 基材位置；
 
-	vector<NGPosition> vectNGPos;
+	std::vector<NGPosition> vectNGPos;
 };
 
 //////////////////////////////////////////////////////////////////////////

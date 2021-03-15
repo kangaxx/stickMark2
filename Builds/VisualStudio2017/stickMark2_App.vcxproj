@@ -80,6 +80,7 @@
       <ProgramDatabaseFile>$(IntDir)\stickMark2.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalLibraryDirectories>..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -132,8 +133,6 @@
     <Lib />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\AdvanceExcel---\BasicExcel.cpp" />
-    <ClCompile Include="..\..\Source\AdvanceExcel---\ExcelFormat.cpp" />
     <ClCompile Include="..\..\Source\clog.cpp" />
     <ClCompile Include="..\..\Source\Config.cpp" />
     <ClCompile Include="..\..\Source\FinsTcp\TransferFins.cpp" />
@@ -142,6 +141,7 @@
     <ClCompile Include="..\..\Source\LabelDataManager.cpp" />
     <ClCompile Include="..\..\Source\Main.cpp" />
     <ClCompile Include="..\..\Source\ConfigureForm.cpp" />
+    <ClCompile Include="..\..\Source\MainComponent.cpp" />
     <ClCompile Include="..\..\Source\MonitorForm.cpp" />
     <ClCompile Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\containers\juce_AbstractFifo.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -1249,6 +1249,7 @@
     <ClCompile Include="..\..\Source\SocketMarker.cpp" />
     <ClCompile Include="..\..\Source\StickServer.cpp" />
     <ClCompile Include="..\..\Source\WarningClient.cpp" />
+    <ClCompile Include="..\..\Source\WarningUI\StickMarker.cpp" />
     <ClCompile Include="..\..\Source\XMLConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1262,8 +1263,6 @@
     <ClInclude Include="..\..\hds\jobcontrol.h" />
     <ClInclude Include="..\..\hds\netmessage.h" />
     <ClInclude Include="..\..\hds\sqlfunctions.h" />
-    <ClInclude Include="..\..\Source\AdvanceExcel---\BasicExcel.hpp" />
-    <ClInclude Include="..\..\Source\AdvanceExcel---\ExcelFormat.h" />
     <ClInclude Include="..\..\Source\CameraDataModel.h" />
     <ClInclude Include="..\..\Source\clog.h" />
     <ClInclude Include="..\..\Source\CompnentUtilities.h" />
@@ -1275,6 +1274,7 @@
     <ClInclude Include="..\..\Source\FinsTcp\TransferHelper.h" />
     <ClInclude Include="..\..\Source\InterConnection.h" />
     <ClInclude Include="..\..\Source\LabelDataManager.h" />
+    <ClInclude Include="..\..\Source\MainComponent.h" />
     <ClInclude Include="..\..\Source\MonitorForm.h" />
     <ClInclude Include="..\..\Source\PCI1230.h" />
     <ClInclude Include="..\..\Source\SocketMarker.h" />
@@ -1657,12 +1657,15 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h" />
     <ClInclude Include="..\..\Source\WarningClient.h" />
     <ClInclude Include="..\..\Source\WarningComponent.h" />
+    <ClInclude Include="..\..\Source\WarningUI\StickMarker.h" />
     <ClInclude Include="..\..\Source\XMLConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\native\java\README.txt" />
     <None Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_graphics\image_formats\jpglib\changes to libjpeg for JUCE.txt" />
     <None Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_graphics\image_formats\pnglib\libpng_readme.txt" />
+    <None Include="..\..\lib\FinsCLI.dll" />
+    <None Include="..\..\lib\PCI1230.dll" />
     <None Include="..\..\Source\FinsTcp\FinsCLI.dll" />
     <None Include="..\..\Source\FinsTcp\OmronLibrary.dll" />
     <None Include="..\..\Source\PCI1230.dll" />
@@ -1671,6 +1674,8 @@
     <ResourceCompile Include=".\resources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\..\lib\FinsCLI.lib" />
+    <Library Include="..\..\lib\PCI1230.lib" />
     <Library Include="..\..\Source\FinsTcp\FinsCLI.lib" />
     <Library Include="..\..\Source\PCI1230.lib" />
   </ItemGroup>

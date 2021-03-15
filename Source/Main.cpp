@@ -8,7 +8,8 @@
 
 #include <JuceHeader.h>
 #include "MonitorForm.h"
-
+#include "MainComponent.h"
+MainComponent* g_maincomponent = nullptr;
 //==============================================================================
 class stickMark2Application  : public juce::JUCEApplication
 {
@@ -25,7 +26,6 @@ public:
     {
         // This method is where you should put your application's initialisation code..
         juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypefaceName(L"SimHei");
-
         //mainWindow.reset (new MainWindow (getApplicationName()));
         mainWindow.reset (new MainWindow (juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba\xe7\xae\xa1\xe7\x90\x86\xe7\xb3\xbb\xe7\xbb\x9f"), new MonitorForm, *this));
     }

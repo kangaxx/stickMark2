@@ -1350,10 +1350,10 @@
     <ClCompile Include="..\..\Source\XMLConfig.cpp">
       <Filter>stickMark2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\AdvanceExcel---\BasicExcel.cpp" />
-    <ClCompile Include="..\..\Source\AdvanceExcel---\ExcelFormat.cpp" />
     <ClCompile Include="..\..\Source\FinsTcp\TransferFins.cpp" />
     <ClCompile Include="..\..\Source\FinsTcp\TransferHelper.cpp" />
+    <ClCompile Include="..\..\Source\MainComponent.cpp" />
+    <ClCompile Include="..\..\Source\WarningUI\StickMarker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\hds\clscli.h">
@@ -2556,12 +2556,12 @@
     <ClInclude Include="..\..\Source\XMLConfig.h">
       <Filter>stickMark2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\AdvanceExcel---\BasicExcel.hpp" />
-    <ClInclude Include="..\..\Source\AdvanceExcel---\ExcelFormat.h" />
     <ClInclude Include="..\..\Source\FinsTcp\FinsCLI.h" />
     <ClInclude Include="..\..\Source\FinsTcp\FinsCLI_JQ.h" />
     <ClInclude Include="..\..\Source\FinsTcp\TransferFins.h" />
     <ClInclude Include="..\..\Source\FinsTcp\TransferHelper.h" />
+    <ClInclude Include="..\..\Source\MainComponent.h" />
+    <ClInclude Include="..\..\Source\WarningUI\StickMarker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\tools\juce-6.0.7-windows\JUCE\modules\juce_core\native\java\README.txt">
@@ -2578,6 +2578,8 @@
     </None>
     <None Include="..\..\Source\FinsTcp\FinsCLI.dll" />
     <None Include="..\..\Source\FinsTcp\OmronLibrary.dll" />
+    <None Include="..\..\lib\FinsCLI.dll" />
+    <None Include="..\..\lib\PCI1230.dll" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include=".\resources.rc">
@@ -2589,5 +2591,7 @@
       <Filter>stickMark2</Filter>
     </Library>
     <Library Include="..\..\Source\FinsTcp\FinsCLI.lib" />
+    <Library Include="..\..\lib\FinsCLI.lib" />
+    <Library Include="..\..\lib\PCI1230.lib" />
   </ItemGroup>
 </Project>

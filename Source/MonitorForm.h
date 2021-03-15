@@ -25,6 +25,10 @@
 #include "../hds/FastDelegate.h"
 #include "tzGrid.h"
 #include "../hds/commonfunction_c.h"
+#include "XMLConfig.h"
+#include "clog.h"
+
+#include"WarningClient.h"
 #define MAX_MARKER_NUM 4
 #define INT_MARKER_SWITCH_OPEN 2
 #define INT_MARKER_SWITCH_CLOSE 2
@@ -51,6 +55,8 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+
+	void ReconnectAll();
 	void resetPlc(std::string window, std::string message)
 	{
 		AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, window, message);
@@ -142,8 +148,12 @@ private:
     std::unique_ptr<juce::TextEditor> txtWarnNum2;
     std::unique_ptr<juce::TextEditor> txtPlcStatus;
     std::unique_ptr<juce::TextButton> btnPlcConnect;
-
-
+	WarningClient client;
+	MainFormClient m_mfClient;
+	String _strCommuIP;
+	int64 _preReportTime;
+	CXMLConfig m_configFile;
+	int  m_iSupportCM5;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MonitorForm)
 };

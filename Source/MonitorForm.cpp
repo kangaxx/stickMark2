@@ -24,6 +24,7 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+
 //[/MiscUserDefs]
 
 //==============================================================================
@@ -268,17 +269,43 @@ MonitorForm::MonitorForm ()
     addAndMakeVisible(gridMain.get());
 
     //[/UserPreSize]
-
+	
     setSize (830, 500);
 
 
     //[Constructor] You can add your own custom stuff here..
+	
     configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
 	gridMain->setFunctionII(MakeDelegate(this, &MonitorForm::switchMarker));
 	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
 	txtWarnNum->setBounds(760, 48, getWidth() - 770, 24);
 	btnSave->setBounds(688, 8, getWidth() - 695, 24);
+
+	String strCommuIP = "192.168.1.201";
+	int ret2 = m_configFile.GetCommuServerAddr(strCommuIP);
+	if (ret2 == 0)
+	{
+		AlertWindow::showMessageBox(AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe9\x85\x8d\xe7\xbd\xae\xe9\xa1\xb9\xe7\xbc\xba\xe9\x80\x9a\xe8\xae\xaf\xe6\x9c\x8d\xe5\x8a\xa1\xe5\x99\xa8IP"), L"");
+	}
+	_strCommuIP = strCommuIP;
+	LOGWT("通讯服务器IP地址：%s", strCommuIP.toStdString().c_str());
+
+	String strPLCIP = "192.168.1.80";
+	ret2 = m_configFile.GetPLCServerAddr(strPLCIP);
+	if (ret2 == 0)
+	{
+		AlertWindow::showMessageBox(AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe9\x85\x8d\xe7\xbd\xae\xe9\xa1\xb9\xe7\xbc\xba\xe6\x89\x93\xe6\xa0\x87\xe6\x9c\xbaIP"), L"");
+	}
+	LOGWT("打标机PLC IP地址：%s", strPLCIP.toStdString().c_str());
+
+	int iSupportC5 = 0;
+	m_configFile.GetContiC5Stop(iSupportC5);
+	m_iSupportCM5 = iSupportC5;// (iSupportC5 >= 0) ? true : false;
+
+	bool ret = client.connectToSocket(strCommuIP, 600, 1000);
+	if (!ret)
+		juce::AlertWindow::showMessageBox(juce::AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe8\xbf\x9e\xe6\x8e\xa5\xe9\x80\x9a\xe8\xae\xaf\xe6\x9c\x8d\xe5\x8a\xa1\xe5\x99\xa8\xe5\xa4\xb1\xe8\xb4\xa5\xef\xbc\x8c\xe7\xa1\xae\xe8\xae\xa4\xe7\xbd\x91\xe7\xbb\x9c\xe9\x80\x9a\xe8\xae\xaf\xe6\x98\xaf\xe5\x90\xa6\xe6\xad\xa3\xe5\xb8\xb8"), "");
     //[/Constructor]
 }
 
@@ -314,6 +341,8 @@ MonitorForm::~MonitorForm()
 	}
     //[/Destructor]
 }
+
+
 
 //==============================================================================
 void MonitorForm::paint (juce::Graphics& g)
@@ -385,8 +414,8 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == btnSave.get())
     {
         //[UserButtonCode_btnSave] -- add your button handler code here..
-		insertWarning(0, String("new warning;"));
-		redrawGrid();
+		//insertWarning(0, String("new warning;"));
+		//redrawGrid();
         //[/UserButtonCode_btnSave]
     }
     else if (buttonThatWasClicked == btnPlcConnect.get())
@@ -403,6 +432,21 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void MonitorForm::ReconnectAll()
+{
+	bool ret = true;
+	if (!client.isConnected())
+		ret = client.connectToSocket(_strCommuIP, 600, 1000);
+	if (!ret)
+	{
+		juce::int64 curT = juce::Time::currentTimeMillis();
+		if (curT - _preReportTime > 10000)
+		{
+			m_mfClient.SendMsgData(true, L"连接通讯服务器失败，确认网络通讯是否正常");
+			_preReportTime = curT;
+		}
+	}
+}
 void MonitorForm::insertWarning(int MarkerIndex, String warning)
 {
 	((gridDataInfo*)(*dataModels)[MarkerIndex])->insertWarning(warning);
@@ -429,6 +473,7 @@ void MonitorForm::redrawGrid()
 	gridMain->addRowData(rowData);
 	gridMain->resized();
 }
+
 //[/MiscUserCode]
 
 
