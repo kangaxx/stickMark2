@@ -89,8 +89,9 @@ struct tzGrid : public Component,
 
 	void drawTitles()
 	{
-		float currentLeft = this->getBordSize();
+		float left = this->getBordSize();
 		float widthScala = getWidthScala();
+		//add all buttons to form
 		for (int i = 0; i < columns.size(); ++i)
 		{
 			TextButton *tmp = new TextButton(columns[i]->getTitle());
@@ -99,10 +100,24 @@ struct tzGrid : public Component,
 			titlesButtons.add(tmp);
 			//btnTest->addListener(this);
 
-			tmp->setBounds(currentLeft, getBordSize(), columns[i]->getWidth() * widthScala, getTitleHeight());
+			tmp->setBounds(left, getBordSize(), columns[i]->getWidth() * widthScala, getTitleHeight());
 			//next columns left = currentLeft + currentWidth;
-			currentLeft += columns[i]->getWidth() * widthScala;
+			left += columns[i]->getWidth() * widthScala;
 		}
+	}
+
+	void redrawTitles()
+	{
+		//adjust buttons bounds for resize form
+		if (titlesButtons.size() <= 0)
+			drawTitles();
+		float left = this->getBordSize();
+		float widthScala = getWidthScala();
+		for (int i = 0; i < titlesButtons.size(); ++i) {
+			titlesButtons[i]->setBounds(left, getBordSize(), columns[i]->getWidth() * widthScala, getTitleHeight());
+			left += columns[i]->getWidth() * widthScala;
+		}
+		return;
 	}
 
 	void drawRows()
@@ -208,6 +223,67 @@ struct tzGrid : public Component,
 		}
 	}
 
+	void redrawRows()
+	{
+		if (rowsComponents.size() <= 0)
+			drawRows();
+		for (int i = 0; i < getRowNum(); ++i)
+		{
+			redrawRow(i, gridData);
+		}
+	}
+
+	void redrawRow(int rowIdx, StringArray data)
+	{
+
+		float top = this->getBordSize() + getTitleHeight() + rowIdx * getRowHeight();
+		float left = this->getBordSize();
+		float widthScala = getWidthScala();
+		for (int i = 0; i < columns.size(); i++)
+		{
+			String text;
+			switch (columns[i]->dataType)
+			{
+			case columnDataType::floatColumn:
+			case columnDataType::intColumn:
+			case columnDataType::stringColumn:
+				text = data.getReference(rowIdx * getColumNum() + i);
+
+
+				break;
+			default:
+				text = "";
+				break;
+			}
+			TextEditor *tmpText, *tmpEdit, *tmpDefault;
+			ComboBox *tmpCombo;
+			switch (columns[i]->componentType)
+			{
+			case columnComponentType::editReadOnly:
+				tmpText = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
+				tmpText->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				//next columns left = currentLeft + currentWidth;
+				left += columns[i]->getWidth() * widthScala;
+				break;
+			case columnComponentType::switchBox:
+				tmpCombo = (ComboBox*)(rowsComponents[rowIdx * getColumNum() + i]);
+				tmpCombo->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				left += columns[i]->getWidth() * widthScala;
+				break;
+			case columnComponentType::editWriteRead:
+				tmpText = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
+				tmpEdit->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				left += columns[i]->getWidth() * widthScala;
+				break;
+			default:
+				tmpDefault = (TextEditor*)(rowsComponents[rowIdx * getColumNum() + i]);
+				tmpDefault->setBounds(left, top, columns[i]->getWidth() * widthScala, getRowHeight());
+				left += columns[i]->getWidth() * widthScala;
+				break;
+			}
+		}
+	}
+
 	void setBackgroudColour(Colour colour)
 	{
 		this->backgroudColour = colour;
@@ -277,8 +353,8 @@ struct tzGrid : public Component,
 		//});
 
 		//grid.performLayout (getLocalBounds());
-		drawTitles();
-		drawRows();
+		redrawTitles();
+		redrawRows();
 	}
 
 	//==============================================================================

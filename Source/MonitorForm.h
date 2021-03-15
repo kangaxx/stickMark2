@@ -57,13 +57,15 @@ public:
 	//num there four marker , num 0 - 3 and status 1 is close  , 2 is open
 	void switchMarker(int num, int status)
 	{
-		AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "switch mark", "mark num : " + String(num) + " ,status : " + String(status));
+		//AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "switch mark", "mark num : " + String(num) + " ,status : " + String(status));
 	}
     //[/UserMethods]
 
     void paint (juce::Graphics& g) override;
     void resized() override;
     void buttonClicked (juce::Button* buttonThatWasClicked) override;
+
+
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -100,11 +102,12 @@ private:
 		String getMarkNum() { return String(markNum); }
 		String getMarkSignalNum() { return String(markSignalNum); }
 		String getSensorNum() { return String(sensorNum); }
+
 		void insertWarning(String w) { warning += w; }
 	};
 	DuLink<gridDataInfo*> *dataModels = NULL;
-	StringArray transModelToString(std::list<gridDataInfo> models);
 	StringArray rowData;
+	void transModelToString();
     //[/UserVariables]
 
     //==============================================================================
@@ -125,7 +128,6 @@ private:
     std::unique_ptr<juce::TextEditor> txtWarnNum2;
     std::unique_ptr<juce::TextEditor> txtPlcStatus;
     std::unique_ptr<juce::TextButton> btnPlcConnect;
-    std::unique_ptr<juce::GroupComponent> groupCommand;
 
 
     //==============================================================================

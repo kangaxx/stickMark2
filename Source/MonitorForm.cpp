@@ -144,14 +144,10 @@ MonitorForm::MonitorForm ()
     txtWarnNum->setPopupMenuEnabled (true);
     txtWarnNum->setText (TRANS("0"));
 
-    txtWarnNum->setBounds (760, 48, 56, 24);
-
-    btnSave.reset (new juce::TextButton ("btnHelp"));
+    btnSave.reset (new juce::TextButton ("btnSave"));
     addAndMakeVisible (btnSave.get());
     btnSave->setButtonText (juce::CharPointer_UTF8 ("\xe4\xbf\x9d\xe5\xad\x98"));
     btnSave->addListener (this);
-
-    btnSave->setBounds (688, 8, 136, 24);
 
     lblPlc2.reset (new juce::Label ("lblPlc",
                                     juce::CharPointer_UTF8 ("\xe8\xb4\xb4\xe6\xa0\x87\xe4\xbf\xa1\xe6\x81\xaf")));
@@ -197,17 +193,11 @@ MonitorForm::MonitorForm ()
 
     btnPlcConnect->setBounds (192, 48, 95, 24);
 
-    groupCommand.reset (new juce::GroupComponent ("new group",
-                                                  juce::String()));
-    addAndMakeVisible (groupCommand.get());
-
-    groupCommand->setBounds (0, -8, 832, 96);
-
 
     //[UserPreSize]
 
 
-	
+
 	gridMain.reset(new tzGrid());
 	gridMain->setBackgroudColour(juce::Colour(0xff323e44));
 	gridMain->setRowHeight(80.0);
@@ -260,7 +250,7 @@ MonitorForm::MonitorForm ()
 	((gridDataInfo*)(*dataModels)[3])->setSensorNum(0);
 
 
-	//第一行数据	
+	//第一行数据
 	rowData.add(juce::CharPointer_UTF8("\xe8\xb4\xb4\xe6\xa0\x87\xe6\x9c\xba 01")); //贴标机 01
 	rowData.add(""); //第二列数据没有text,但是也要留空
 	rowData.add(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")); //关机
@@ -298,17 +288,19 @@ MonitorForm::MonitorForm ()
 	gridMain->addRowData(rowData); //所有数据一起传输
 
     addAndMakeVisible(gridMain.get());
-    gridMain->setBounds(8, 100, 814, 360);
+
     //[/UserPreSize]
 
-    setSize (600, 400);
+    setSize (830, 500);
 
 
     //[Constructor] You can add your own custom stuff here..
     configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
 	gridMain->setFunctionII(MakeDelegate(this, &MonitorForm::switchMarker));
-	setSize (830, 500);
+	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
+	txtWarnNum->setBounds(760, 48, getWidth() - 770, 24);
+	btnSave->setBounds(688, 8, getWidth() - 695, 24);
     //[/Constructor]
 }
 
@@ -334,7 +326,6 @@ MonitorForm::~MonitorForm()
     txtWarnNum2 = nullptr;
     txtPlcStatus = nullptr;
     btnPlcConnect = nullptr;
-    groupCommand = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -363,7 +354,12 @@ void MonitorForm::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
+    txtWarnNum->setBounds (760, 48, getWidth() - 911, 24);
+    btnSave->setBounds (688, 8, getWidth() - 836, 24);
     //[UserResized] Add your own custom resize handling here..
+	txtWarnNum->setBounds(760, 48, getWidth() - 770, 24);
+	btnSave->setBounds(688, 8, getWidth() - 695, 24);
+	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
     //[/UserResized]
 }
 
@@ -426,11 +422,18 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
 
 
 
-
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-StringArray MonitorForm::transModelToString(std::list<gridDataInfo> models)
+void MonitorForm::transModelToString()
 {
-	return StringArray();
+	rowData.clear();
+	for (int i = 0; i < dataModels->size(); i++) {
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getName());
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getStatus());
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getWarning());
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getMarkNum());
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getMarkSignalNum());
+		rowData.add(((gridDataInfo*)(*dataModels)[i])->getSensorNum());
+	}
 }
 //[/MiscUserCode]
 
@@ -447,7 +450,7 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="MonitorForm" componentName=""
                  parentClasses="public juce::Component" constructorParams="" variableInitialisers=""
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
-                 fixedSize="0" initialWidth="600" initialHeight="400">
+                 fixedSize="0" initialWidth="830" initialHeight="500">
   <BACKGROUND backgroundColour="ff323e44"/>
   <TEXTBUTTON name="btnConfigure" id="dea7d10815db584d" memberName="btnConfigure"
               virtualName="" explicitFocusOrder="0" pos="8 8 136 24" buttonText="&#21021;&#22987;&#35774;&#32622;"
@@ -497,11 +500,11 @@ BEGIN_JUCER_METADATA
          fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
          italic="0" justification="33"/>
   <TEXTEDITOR name="txtWarnNum" id="ea91343574eb17e6" memberName="txtWarnNum"
-              virtualName="" explicitFocusOrder="0" pos="760 48 56 24" initialText="0"
+              virtualName="" explicitFocusOrder="0" pos="760 48 911M 24" initialText="0"
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
-  <TEXTBUTTON name="btnHelp" id="87f4b36d4d1f1540" memberName="btnSave" virtualName=""
-              explicitFocusOrder="0" pos="688 8 136 24" buttonText="&#20445;&#23384;"
+  <TEXTBUTTON name="btnSave" id="87f4b36d4d1f1540" memberName="btnSave" virtualName=""
+              explicitFocusOrder="0" pos="688 8 836M 24" buttonText="&#20445;&#23384;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="lblPlc" id="2ffc8ee9af202b5" memberName="lblPlc2" virtualName=""
          explicitFocusOrder="0" pos="8 48 80 24" edTextCol="ff000000"
@@ -520,8 +523,6 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="192 48 95 24" bgColOff="ffff0000"
               buttonText="&#36830;&#25509;PLC" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
-  <GROUPCOMPONENT name="new group" id="b7ba15b17c2913df" memberName="groupCommand"
-                  virtualName="" explicitFocusOrder="0" pos="0 -8 832 96" title=""/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
