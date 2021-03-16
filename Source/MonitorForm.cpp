@@ -18,20 +18,110 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include <windows.h>
+
 //[/Headers]
 
 #include "MonitorForm.h"
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+WriteCommData* g_pWriteThread_codeTrans = nullptr;
+double _curRunningLenPos_codeTrans[4] = { -1.,-1.,-1.,-1. };
+double _preStickLenPos_codeTrans[4];
+bool UnicodeToMB_CodeTrans(char*& pmb, const wchar_t* pun, int uLen)
+{
+	pmb = nullptr;
 
+	// convert an widechar string to Multibyte
+	int MBLen = WideCharToMultiByte(CP_ACP, 0, pun, -1, NULL, 0, NULL, NULL);  //CP_ACP OK
+	if (MBLen <= 0)
+	{
+		return false;
+	}
+	pmb = new char[MBLen + 1];
+	memset(pmb, 0, MBLen + 1);
+
+	int nRtn = WideCharToMultiByte(CP_ACP, 0, pun, -1, pmb, MBLen, NULL, NULL);
+
+	if (nRtn != MBLen)
+	{
+		delete[] pmb;
+		pmb = nullptr;
+		return false;
+	}
+	return true;
+}
+
+String ProduceDefectString_CodeTrans(int code)
+{
+	String str = "";
+	if (code & 0x200)
+		str += String(juce::CharPointer_UTF8("\xe6\xbc\x8f\xe9\x87\x91\xe5\xb1\x9e"));
+	if (code & 0x400)
+		str += String(juce::CharPointer_UTF8("\xe6\x9d\xa1\xe7\x97\x95"));
+	if (code & 0x800)
+		str += String(juce::CharPointer_UTF8("\xe8\x84\xb1\xe7\xa2\xb3"));
+	if (code & 0x1000)
+		str += String(juce::CharPointer_UTF8("\xe6\xb0\x94\xe6\xb3\xa1"));
+	if (code & 0x2000)
+		str += String(juce::CharPointer_UTF8("\xe6\xb0\x94\xe6\xb3\xa1"));
+	if (code & 0x4000)
+		str += String(juce::CharPointer_UTF8("\xe7\x99\xbd\xe7\x82\xb9"));
+	if (code & 0x8000)
+		str += String(juce::CharPointer_UTF8("\xe9\xbb\x91\xe7\x82\xb9"));
+	if (code & 0x400000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe7\x89\x87\xe7\xa0\xb4\xe6\x8d\x9f"));
+	if (code & 0x800000)
+		str += String(juce::CharPointer_UTF8("AT9\xe6\xbc\x8f\xe9\x87\x91\xe5\xb1\x9e"));
+	if (code & 0x1000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9c\xaa\xe8\xbe\x8a\xe5\x8e\x8b"));
+	if (code & 0x2000000)
+		str += String(juce::CharPointer_UTF8("\xe8\xbe\xb9\xe7\xbc\x98\xe6\xbc\x8f\xe9\x87\x91\xe5\xb1\x9e"));
+	if (code & 0x4000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe8\x80\xb3\xe7\xa0\xb4\xe6\x8d\x9f"));
+	if (code & 0x4000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe8\x80\xb3\xe7\xa0\xb4\xe6\x8d\x9f"));
+	if (code & 0x8000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe8\x80\xb3\xe4\xbd\x99\xe6\x96\x99"));
+	if (code & 0x10000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9a\x97\xe7\x97\x95"));
+	if (code & 0x20000000)
+		str += String(juce::CharPointer_UTF8("\xe6\x9c\xaa\xe6\xb6\x82\xe8\x86\x9c"));
+	if (code & 0x40000000)
+		str += String(juce::CharPointer_UTF8("\xe7\x9b\xb4\xe8\xbe\xb9\xe4\xbd\x99\xe6\x96\x99"));
+	if (code & 0x100)
+		str += String(juce::CharPointer_UTF8("\xe5\x88\x86\xe6\x9d\xa1\xe5\xae\xbd\xe5\xba\xa6"));
+	if (code & 0x4 || code & 0x8 || code & 0x20000 || code & 0x40000 || code & 0x100000 || code & 0x200000) // 101   102
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe8\x80\xb3\xe5\xae\x8c\xe6\x95\xb4\xe5\xba\xa6"));
+	//if (code & 0x20000 || code & 0x40000) // 109	 110
+	//	str += String("极耳高度";
+	//if (code & 0x100000 || code & 0x200000) // 112
+	//	str += String("极耳缺失NG";
+	if (code & 0x10 || code & 0x20) // 103	  104
+		str += String(juce::CharPointer_UTF8("\xe6\x9e\x81\xe8\x80\xb3\xe9\x97\xb4\xe8\xb7\x9d"));
+	if (code & 0x40 || code & 0x80 || code & 0x10000) // 105	 106
+		str += String(juce::CharPointer_UTF8("AT9\xe5\xae\xbd\xe5\xba\xa6"));
+	//if (code & 0x10000) // 108
+	//	str += String("AT9宽度差NG";
+	if (code & 0x80000) // 111
+		str += String(juce::CharPointer_UTF8("\xe6\x80\xbb\xe8\x86\x9c\xe9\x95\xbf"));
+
+	if (str.isEmpty())
+		str << code;
+
+	return str;
+}
 //[/MiscUserDefs]
 
 //==============================================================================
 MonitorForm::MonitorForm ()
 {
     //[Constructor_pre] You can add your own custom stuff here..
-
+	CLabelDM[0] = new CLabelerDataManager();
+	CLabelDM[1] = new CLabelerDataManager();
+	g_pWriteThread_codeTrans = new WriteCommData();
+	g_pWriteThread_codeTrans->startThread();
     //[/Constructor_pre]
 
     btnConfigure.reset (new juce::TextButton ("btnConfigure"));
@@ -266,16 +356,16 @@ MonitorForm::MonitorForm ()
 
 	gridMain->addRowData(rowData); //所有数据一起传输
 
-    addAndMakeVisible(gridMain.get());
+	addAndMakeVisible(gridMain.get());
 
     //[/UserPreSize]
-	
+
     setSize (830, 500);
 
 
     //[Constructor] You can add your own custom stuff here..
-	
-    configureForm = new ConfigureForm();
+
+	configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
 	gridMain->setFunctionII(MakeDelegate(this, &MonitorForm::switchMarker));
 	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
@@ -312,6 +402,11 @@ MonitorForm::MonitorForm ()
 MonitorForm::~MonitorForm()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
+	delete CLabelDM[0];
+	CLabelDM[0] = nullptr;
+	delete CLabelDM[1];
+	CLabelDM[1] = nullptr;
+
     //[/Destructor_pre]
 
     btnConfigure = nullptr;
@@ -334,15 +429,13 @@ MonitorForm::~MonitorForm()
 
 
     //[Destructor]. You can add your own custom destruction code here..
-    delete configureForm;
-    configureForm = nullptr;
+	delete configureForm;
+	configureForm = nullptr;
 	if (dataModels != NULL) {
 		delete dataModels;
 	}
     //[/Destructor]
 }
-
-
 
 //==============================================================================
 void MonitorForm::paint (juce::Graphics& g)
@@ -442,7 +535,7 @@ void MonitorForm::ReconnectAll()
 		juce::int64 curT = juce::Time::currentTimeMillis();
 		if (curT - _preReportTime > 10000)
 		{
-			m_mfClient.SendMsgData(true, L"连接通讯服务器失败，确认网络通讯是否正常");
+			m_mfClient.SendMsgData(m_bNewUI, L"连接通讯服务器失败，确认网络通讯是否正常");
 			_preReportTime = curT;
 		}
 	}
@@ -472,6 +565,506 @@ void MonitorForm::redrawGrid()
 
 	gridMain->addRowData(rowData);
 	gridMain->resized();
+}
+
+void MonitorForm::ResetAndNewRoll(String rollName)
+{
+	LOGWT("收到膜卷号:%s", rollName.toStdString().c_str());
+	m_rollName = rollName;
+	//复位打标
+	bool ret2 = stickmarker->SendCmd(4204, 1);
+
+	CreateNewRoll();
+
+	CTLMARK_PG data;
+	data.code = 10000;
+	data.valid = false;
+	sever.SendData(data);
+
+	//新卷清零
+	stickmarker->SendCmd(4204, 0);
+}
+
+bool MonitorForm::SendCmd(int addr, int val)
+{
+	_cs.enter();
+	COMMAND_WRITE data;
+	data.flag = val;
+	data.regAddr = addr;
+	_cmds.push_back(data);
+	_cs.exit();
+	return true;
+
+}
+
+void MonitorForm::HandleClientMessage(juce::String host, HDataMessage *pMessage)
+{
+	int iRoad = pMessage->data.iRoad;
+	StickMarkInfo tm;
+	int ioPort = -1;
+	if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 1)
+	{
+		tm.roadUser = 1;
+		ioPort = _ioPorts[0];
+	}
+	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 1)
+	{
+		tm.roadUser = 2;
+		ioPort = _ioPorts[1];
+
+	}
+	else if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 0)
+	{
+		tm.roadUser = 3;
+		ioPort = _ioPorts[2];
+
+	}
+	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 0)
+	{
+		tm.roadUser = 4;
+		ioPort = _ioPorts[3];
+
+	}
+	//喷码测试
+	/*if (pMessage->data.code < 0)
+	{
+		double destPos = pMessage->data.destPos * 0.1;
+		MarkerMessage* msg = nullptr; (1, 128, -1, 0);
+		for (int i = 0; i < m_stickInfos.size(); i++)
+		{
+			if (m_stickInfos[i].lenPos < destPos &&
+				m_stickInfos[i].road == pMessage->data.iRoad &&
+				m_stickInfos[i].iSe == pMessage->data.iSel &&
+				(destPos - m_stickInfos[i].lenPos) < m_EASumLen)
+			{
+				int type = ProduceDefectCode(m_stickInfos[i].codeReason);
+				NGPosition pos((Marker_Defect_Type)type);
+				if (msg == nullptr)
+				{
+					msg = new MarkerMessage(type - 1, 128, -1, 0);
+					msg->AddNGMark(pos);
+					continue;
+				}
+				msg->AddNGMark(pos);
+
+			}
+		}
+		if (msg)
+		{
+			_markingEng->SetMarkerEnable(true);
+			_markingEng->SendIOSigAndMarkerMsg(ioPort, *msg, _pulseLast);
+			delete msg;
+		}
+	}*/
+	//
+
+	//上带路 打标机
+
+	if (iRoad >= 0 && iRoad < 2)
+	{
+
+		if (pMessage->data.valid)
+		{
+			pMessage->data.destPos /= 10.;
+
+			tm.codeReason = pMessage->data.code;
+			tm.lenPos = pMessage->data.destPos;
+			strcpy(tm.ip, host.toStdString().c_str());
+
+
+			tm.sendTime = Time::currentTimeMillis();
+			tm.stickTime = Time::currentTimeMillis();
+			tm.road = pMessage->data.iRoad;
+			tm.iSe = pMessage->data.iSel;
+			tm.bSticked = false;
+			tm.EA = pMessage->data.EA;
+			//1,0  0,0   0,1 1,1
+			//AddLabelData内部已经加锁
+
+			bool ret = CLabelDM[iRoad]->AddLabelData(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.srcPos, pMessage->data.destPos);
+
+
+
+			_objectLock.enter();
+			if (ret)
+			{
+				m_stickInfos.push_back(tm);
+			}
+			//需要确认问题
+
+			if (g_pWriteThread_codeTrans != nullptr && ret)
+			{
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], " Succ add label from%s: srcPos=%f,iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), pMessage->data.srcPos, iRoad, pMessage->data.iSel, pMessage->data.destPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+			}
+			else if (g_pWriteThread_codeTrans != nullptr && !ret)
+			{
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], "Fail add label from%s: iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.destPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+
+			}
+			_objectLock.exit();
+
+		}
+		else
+		{
+			pMessage->data.srcPos /= 10.;
+			double dSpeed = client.GetMachineSpeed();
+			double destPos = 0.;
+
+			_objectLock.enter();
+
+			// 如果设备运行中新卷了
+
+			if (m_bSupportStick_Remain && pMessage->data.srcPos < 600 && (_curRunningLenPos_codeTrans[tm.roadUser - 1] - pMessage->data.srcPos) >= 1000.)
+			{
+				//停机情况下新卷开始，保存改带路未被打标的数据
+
+				for (int i = 0; i < m_stickInfos.size(); i++)
+				{
+					if (m_stickInfos[i].bSticked || m_stickInfos[i].roadUser <= 0)
+						continue;
+					bool bSkip = false;
+					//停机情况下新卷开始，保存改带路未被打标的数据
+
+					for (int j = i + 1; j < m_stickInfos.size(); j++)
+					{
+						//如果后面一个已经出标，则改打标信息不应该存在
+
+						if (m_stickInfos[j].bSticked && m_stickInfos[i].road == m_stickInfos[j].road &&  m_stickInfos[i].iSe == m_stickInfos[j].iSe)
+						{
+							bSkip = true;
+							break;
+						}
+						if (m_stickInfos[j].bSticked && (m_stickInfos[j].lenPos - m_stickInfos[i].lenPos) >= m_EASumLen * 0.5) //4m以后出现已经出标的，则前面的也不应该出现
+						{
+							bSkip = true;
+							break;
+						}
+					}
+					if (bSkip)
+						continue;
+
+					if (_curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1] < m_stickInfos[i].lenPos) //有效
+					{
+						m_stickInfos[i].lenPos = m_stickInfos[i].lenPos - _curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1];
+						m_stickInfoReserves.push_back(m_stickInfos[i]);
+						m_stickInfos.erase(m_stickInfos.begin() + i);
+						i--;
+					}
+				}
+			}
+
+			_curRunningLenPos_codeTrans[tm.roadUser - 1] = pMessage->data.srcPos;
+
+			if (/*g_iUsePLCSpeed &&*/ dSpeed > 5.)
+			{
+				juce::int64 diffT = juce::Time::getCurrentTime().toMilliseconds() - client.m_recTime;
+				if (diffT < 0) diffT = -diffT;
+
+				if (diffT < 5000)
+					pMessage->data.speed = dSpeed;
+			}
+
+
+
+			if (false && g_pWriteThread_codeTrans)
+			{
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], " ***position  from %s***: iRoad=%d,  iSel=%d, curPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.srcPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+			}
+
+			m_sumEars = (juce::int64)pMessage->data.destPos;
+			m_curEA[tm.roadUser - 1] = m_sumEars;
+
+
+			bool bValid = true;
+			if (m_curEA[tm.roadUser - 1] > 0 && m_curEA[tm.roadUser - 1] == m_continue4StickEA[tm.roadUser - 1])
+			{
+				bValid = false;
+			}
+
+			bool bSticked = false;
+			if (bValid)
+				bSticked = CLabelDM[iRoad]->RunningLength(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.speed, pMessage->data.srcPos, destPos);
+			if (bSticked)
+			{
+				Num_Mark[tm.roadUser - 1]++;
+			}
+
+
+
+
+			m_preSentPos[iRoad][pMessage->data.iSel] = pMessage->data.srcPos;
+			m_sentCount[iRoad]++;
+			if (m_sentCount[iRoad] > 900000000)
+			{
+				m_sentCount[iRoad] = 0;
+			}
+
+			if (bSticked)
+			{
+				for (int i = 0; i < m_stickInfos.size(); i++)
+				{
+					if (m_stickInfos[i].bSticked || m_stickInfos[i].road != pMessage->data.iRoad || m_stickInfos[i].iSe != pMessage->data.iSel)
+						continue;
+
+					if (fabs(m_stickInfos[i].lenPos - destPos) < 5.)
+					{
+						m_stickInfos[i].bSticked = true;
+						m_stickInfos[i].stickTime = Time::currentTimeMillis();
+
+						//判读是否某个带路连续5个EA打标
+
+						if (m_iSupportCM5 >= 2)
+						{
+							int roadConti[4] = { 0,0,0,0 };
+							double eaOrders[4] = { -1,-1,-1,-1 };
+							for (int j = 0; j < m_stickInfos.size(); j++)
+							{
+								int roadM = m_stickInfos[j].roadUser;
+								if (roadM >= 1 && roadM <= 4)
+								{
+									if (j < m_roadsSearch[roadM - 1])
+										continue;
+
+									if (eaOrders[roadM - 1] < 0 || (abs(m_stickInfos[j].lenPos - eaOrders[roadM - 1]) <= m_EASumLen * 1.5))
+									{
+										roadConti[roadM - 1]++;
+										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
+									}
+									else
+									{
+										roadConti[roadM - 1] = 1;
+										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
+									}
+									if (roadConti[roadM - 1] >= m_iSupportCM5)
+									{
+										m_roadsSearch[roadM - 1] = j;
+										String info = L"带路";
+										info << roadM << L"连续贴标停机!";
+										stickmarker->StopMachine(info);
+										break;
+									}
+								}
+							}
+						}
+
+
+						//需要确认问题
+
+						if (g_pWriteThread_codeTrans)
+						{
+							char szTm[256] = { 0 };
+							juce::Time time = juce::Time::getCurrentTime();
+							int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+							sprintf(&szTm[index], " ***Succ label from %s ***: iRoad=%d, iSel=%d, destPos=%f\n", m_stickInfos[i].ip, iRoad, pMessage->data.iSel, destPos);
+							g_pWriteThread_codeTrans->AddDebugData(szTm);
+						}
+						break;
+					}
+				}
+			}
+			_objectLock.exit();
+
+		}
+	}
+}
+
+void MonitorForm::CreateNewRoll()
+{
+	stickmarker->ClearLessMore();
+
+	_objectLock.enter();
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_roadsSearch[i] = 0;
+		_handmStick[i] = 0;
+		_preCheckTime[i] = Time::currentTimeMillis();
+		_preStickTime[i] = -1;
+		//_curRunningLenPos[i] = -1.;
+		//_preStickLenPos[i] = -1.;
+		m_continue4StickEA[i] = -1;
+		m_curEA[i] = -1;
+	}
+
+	m_preSentPos[0][0] = -1.;
+	m_preSentPos[0][1] = -1.;
+
+	m_sentCount[0] = 0;
+	m_preSentPos[1][0] = -1.;
+	m_preSentPos[1][1] = -1.;
+
+	m_sentCount[1] = 0;
+
+	//delete  g_log;
+	//g_log = nullptr;
+
+	String logFileSubDirectoryName = "LabelLog";
+	String logFileName = "LabelLog";
+	logFileName << Time::getCurrentTime().formatted("%Y-%m-%d_%H-%M-%S");
+	String welcomeMessage = "Welcom log message for label";
+	int64 maxInitialFileSizeBytes = 5 * 1024 * 1024;
+
+	//g_log = new FileLogger(File::getCurrentWorkingDirectory().getChildFile(logFileSubDirectoryName)
+	//    .getChildFile(logFileName),
+	//    welcomeMessage, maxInitialFileSizeBytes);
+
+	if (m_sumEars > 0)
+	{
+		Save2MonthReport();
+
+		SaveReport();
+
+	}
+	CLabelDM[0]->NewRoll();
+	CLabelDM[1]->NewRoll();
+
+
+	if (m_stickInfos.size() > 0)
+	{
+		Time time = Time::getCurrentTime();
+		char szFile[256] = { 0 };
+		sprintf(szFile, "StickReport_%d_%d_%d_%d-%d-%d.csv", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+		FILE* fp = fopen(szFile, "w");
+		if (fp)
+		{
+			String szTitle = L"打标原因,长度位置,EA序号,带路,发送打标时间,实际打标时间,是否打标";
+			char* pmbType;
+			UnicodeToMB_CodeTrans(pmbType, szTitle.toUTF16(), szTitle.length());
+			fprintf(fp, "%s\n", pmbType);
+			delete[] pmbType;
+
+			for (int i = 0; i < m_stickInfos.size(); i++)
+			{
+
+				String strReason = ProduceDefectString_CodeTrans(m_stickInfos[i].codeReason);
+				UnicodeToMB_CodeTrans(pmbType, strReason.toUTF16(), strReason.length());
+				fprintf(fp, "%s,", pmbType);
+				fprintf(fp, "%f,", m_stickInfos[i].lenPos);
+				fprintf(fp, "%d,", m_stickInfos[i].EA);
+				fprintf(fp, "%d,", m_stickInfos[i].roadUser);
+				delete[] pmbType;
+
+				char szTm[256] = { 0 };
+				juce::Time time(m_stickInfos[i].sendTime);
+				sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				fprintf(fp, "%s,", szTm);
+
+				memset(szTm, 0, 256);
+				juce::Time time2(m_stickInfos[i].stickTime);
+				sprintf(szTm, "%d_%d_%d_%d:%d:%d", time2.getYear(), time2.getMonth() + 1, time2.getDayOfMonth(), time2.getHours(), time2.getMinutes(), time2.getSeconds());
+				fprintf(fp, "%s,", szTm);
+
+				String stick;
+				if (m_stickInfos[i].bSticked)
+					stick = String(juce::CharPointer_UTF8("\xe5\xae\x8c\xe6\x88\x90"));
+				else
+					stick = String(juce::CharPointer_UTF8("\xe6\x9c\xaa\xe5\xae\x8c\xe6\x88\x90"));
+				UnicodeToMB_CodeTrans(pmbType, stick.toUTF16(), stick.length());
+				fprintf(fp, "%s\n", pmbType);
+				delete[] pmbType;
+
+			}
+			fclose(fp);
+		}
+	}
+	if (m_bSupportStick_Remain)
+	{
+		if (m_stickInfoReserves.size() == 0) //如果在运行过程中新卷，则m_stickInfoReserves会有
+		{
+			for (int i = 0; i < m_stickInfos.size(); i++) //停机情况下新卷开始，保存改带路未被打标的数据
+			{
+				if (m_stickInfos[i].bSticked || m_stickInfos[i].roadUser <= 0)
+					continue;
+
+
+				bool bSkip = false;
+				for (int j = i + 1; j < m_stickInfos.size(); j++) //停机情况下新卷开始，保存改带路未被打标的数据
+				{
+					//如果后面一个已经出标，则改打标信息不应该存在
+					if (m_stickInfos[j].bSticked && m_stickInfos[i].road == m_stickInfos[j].road &&  m_stickInfos[i].iSe == m_stickInfos[j].iSe)
+					{
+						bSkip = true;
+						break;
+					}
+					if (m_stickInfos[j].bSticked && (m_stickInfos[j].lenPos - m_stickInfos[i].lenPos) > 4000) //4m以后出现已经出标的，则前面的也不应该出现
+					{
+						bSkip = true;
+						break;
+					}
+				}
+				if (bSkip)
+					continue;
+
+				if (_curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1] < m_stickInfos[i].lenPos) //有效
+				{
+					m_stickInfos[i].lenPos = m_stickInfos[i].lenPos - _curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1];
+					m_stickInfoReserves.push_back(m_stickInfos[i]);
+					m_stickInfos.erase(m_stickInfos.begin() + i);
+					i--;
+
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		_curRunningLenPos_codeTrans[i] = -1.;
+		_preStickLenPos_codeTrans[i] = -1.;
+	}
+
+	m_stickInfos.clear();
+	m_stickInfos.reserve(2000);
+	m_sumEars = 0;//总数
+
+	Num_Mark[0] = 0;
+	Num_Mark[1] = 0;
+	Num_Mark[2] = 0;
+	Num_Mark[3] = 0;
+
+	if (m_bSupportStick_Remain)
+	{
+		//未被打标的数据需要加入到对应控制器
+
+		for (int i = 0; i < m_stickInfoReserves.size(); i++)
+		{
+			if (m_stickInfoReserves[i].bSticked)
+				continue;
+
+			bool bRet = CLabelDM[m_stickInfoReserves[i].road]->AddLabelData(m_stickInfoReserves[i].road, m_stickInfoReserves[i].iSe,
+				m_stickInfoReserves[i].lenPos, m_stickInfoReserves[i].lenPos);
+
+			if (bRet)
+				m_stickInfos.push_back(m_stickInfoReserves[i]);
+		}
+		m_stickInfoReserves.clear();
+		m_stickInfoReserves.reserve(100);
+
+	}
+	m_sent2ServerIndex = 0;
+	_objectLock.exit();
+}
+
+void MonitorForm::Save2MonthReport()
+{
+	//todo reference MainComponent Save2MonthReport()
+}
+
+void MonitorForm::SaveReport()
+{
+	//todo reference MainComponent SaveReport()
 }
 
 //[/MiscUserCode]
@@ -539,11 +1132,11 @@ BEGIN_JUCER_METADATA
          fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
          italic="0" justification="33"/>
   <TEXTEDITOR name="txtWarnNum" id="ea91343574eb17e6" memberName="txtWarnNum"
-              virtualName="" explicitFocusOrder="0" pos="760 48 911M 24" initialText="0"
+              virtualName="" explicitFocusOrder="0" pos="760 48 347M 24" initialText="0"
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <TEXTBUTTON name="btnSave" id="87f4b36d4d1f1540" memberName="btnSave" virtualName=""
-              explicitFocusOrder="0" pos="688 8 836M 24" buttonText="&#20445;&#23384;"
+              explicitFocusOrder="0" pos="688 8 347M 24" buttonText="&#20445;&#23384;"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="lblPlc" id="2ffc8ee9af202b5" memberName="lblPlc2" virtualName=""
          explicitFocusOrder="0" pos="8 48 80 24" edTextCol="ff000000"

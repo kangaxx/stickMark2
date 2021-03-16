@@ -23,12 +23,15 @@
 #include <JuceHeader.h>
 #include "ConfigureForm.h"
 #include "../hds/FastDelegate.h"
+#include "MainComponent.h"
 #include "tzGrid.h"
 #include "../hds/commonfunction_c.h"
 #include "XMLConfig.h"
 #include "clog.h"
-
+#include".\WarningUI\StickMarker.h"
+#include "StickServer.h"
 #include"WarningClient.h"
+#include"LabelDataManager.h"
 #define MAX_MARKER_NUM 4
 #define INT_MARKER_SWITCH_OPEN 2
 #define INT_MARKER_SWITCH_CLOSE 2
@@ -90,7 +93,7 @@ private:
 	struct gridDataInfo
 	{
 		String name;
-		String command; //这一列没有文字展现但是也要占用一列
+		String command; 
 		String status;
 		String warning;
 		int markNum;
@@ -128,6 +131,46 @@ private:
 	void insertWarning(int MarkerIndex, String warning);
 	void updateSwitchStatus(int MarkerIndex, String status);
 	void redrawGrid();
+	void ResetAndNewRoll(String rollName);
+	bool SendCmd(int addr, int val); 
+
+	juce::CriticalSection _cs;
+	vector<COMMAND_WRITE> _cmds;
+	WarningClient client;
+	MainFormClient m_mfClient;
+	String _strCommuIP;
+	int64 _preReportTime;
+	CXMLConfig m_configFile;
+	int  m_iSupportCM5;
+	String m_rollName;
+	bool m_bNewUI = false;
+	bool m_sumEars = false;
+	std::vector<StickMarkInfo> m_stickInfos;
+	StickMarker* stickmarker;
+	int64 preCmdTime[4];
+	int	  _pulseLast;
+	int   _ioPorts[4]; 
+	int Num_Mark[4];
+	double m_EASumLen;
+	String _strPLCIP;
+	CLabelerDataManager* CLabelDM[2];
+	CriticalSection _objectLock;
+	int	 m_roadsSearch[4];
+	juce::int64 _handmStick[4];
+	juce::int64 _preStickTime[4];
+	juce::int64 _preCheckTime[4];
+	juce::int64 m_continue4StickEA[4];
+	juce::int64 m_curEA[4];
+	juce::int64 m_sent2ServerIndex;
+	double m_preSentPos[2][2];
+	juce::int64 m_sentCount[2];
+	void HandleClientMessage(juce::String, HDataMessage* hmsg);
+	void CreateNewRoll();
+	void Save2MonthReport();
+	void SaveReport();
+	InterprocessStickServer sever;
+	bool m_bSupportStick_Remain;
+	std::vector<StickMarkInfo> m_stickInfoReserves;
     //[/UserVariables]
 
     //==============================================================================
@@ -148,12 +191,8 @@ private:
     std::unique_ptr<juce::TextEditor> txtWarnNum2;
     std::unique_ptr<juce::TextEditor> txtPlcStatus;
     std::unique_ptr<juce::TextButton> btnPlcConnect;
-	WarningClient client;
-	MainFormClient m_mfClient;
-	String _strCommuIP;
-	int64 _preReportTime;
-	CXMLConfig m_configFile;
-	int  m_iSupportCM5;
+
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MonitorForm)
 };
