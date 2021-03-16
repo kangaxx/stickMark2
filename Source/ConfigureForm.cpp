@@ -160,7 +160,7 @@ ConfigureForm::ConfigureForm ()
     txtSignal->setScrollbarsShown (true);
     txtSignal->setCaretVisible (true);
     txtSignal->setPopupMenuEnabled (true);
-    txtSignal->setText (TRANS("00000000000000000000000000000000"));
+    txtSignal->setText (TRANS("0"));
 
     txtSignal->setBounds (136, 200, 240, 24);
 
