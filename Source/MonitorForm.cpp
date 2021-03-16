@@ -29,7 +29,12 @@
 WriteCommData* g_pWriteThread_codeTrans = nullptr;
 double _curRunningLenPos_codeTrans[4] = { -1.,-1.,-1.,-1. };
 double _preStickLenPos_codeTrans[4];
+juce::CriticalSection mute_codeTrans;
+std::vector<NumCount> g_stickNumCount_codeTrans;
+CXMLConfig g_configFile;
 extern bool _threadShouldExit;
+extern int isMarkerOnUse[4];
+
 bool UnicodeToMB_CodeTrans(char*& pmb, const wchar_t* pun, int uLen)
 {
 	pmb = nullptr;
@@ -121,8 +126,9 @@ MonitorForm::MonitorForm ()
     //[Constructor_pre] You can add your own custom stuff here..
 	CLabelDM[0] = new CLabelerDataManager();
 	CLabelDM[1] = new CLabelerDataManager();
-	g_pWriteThread_codeTrans = new WriteCommData();
-	g_pWriteThread_codeTrans->startThread();
+
+
+
     //[/Constructor_pre]
 
     btnConfigure.reset (new juce::TextButton ("btnConfigure"));
@@ -368,13 +374,14 @@ MonitorForm::MonitorForm ()
 
 	configureForm = new ConfigureForm();
 	configureForm->setFunctionSS(MakeDelegate(this, &MonitorForm::resetPlc));
+	configureForm->setFunctionI(MakeDelegate(this, &MonitorForm::sendPlcCommand));
 	gridMain->setFunctionII(MakeDelegate(this, &MonitorForm::switchMarker));
 	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
 	txtWarnNum->setBounds(760, 48, getWidth() - 770, 24);
 	btnSave->setBounds(688, 8, getWidth() - 695, 24);
 
 	String strCommuIP = "192.168.1.201";
-	int ret2 = m_configFile.GetCommuServerAddr(strCommuIP);
+	int ret2 = g_configFile.GetCommuServerAddr(strCommuIP);
 	if (ret2 == 0)
 	{
 		AlertWindow::showMessageBox(AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe9\x85\x8d\xe7\xbd\xae\xe9\xa1\xb9\xe7\xbc\xba\xe9\x80\x9a\xe8\xae\xaf\xe6\x9c\x8d\xe5\x8a\xa1\xe5\x99\xa8IP"), L"");
@@ -383,7 +390,7 @@ MonitorForm::MonitorForm ()
 	LOGWT("通讯服务器IP地址：%s", strCommuIP.toStdString().c_str());
 
 	String strPLCIP = "192.168.1.80";
-	ret2 = m_configFile.GetPLCServerAddr(strPLCIP);
+	ret2 = g_configFile.GetPLCServerAddr(strPLCIP);
 	if (ret2 == 0)
 	{
 		AlertWindow::showMessageBox(AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe9\x85\x8d\xe7\xbd\xae\xe9\xa1\xb9\xe7\xbc\xba\xe6\x89\x93\xe6\xa0\x87\xe6\x9c\xbaIP"), L"");
@@ -391,20 +398,130 @@ MonitorForm::MonitorForm ()
 	LOGWT("打标机PLC IP地址：%s", strPLCIP.toStdString().c_str());
 
 	int iSupportC5 = 0;
-	m_configFile.GetContiC5Stop(iSupportC5);
+	g_configFile.GetContiC5Stop(iSupportC5);
 	m_iSupportCM5 = iSupportC5;// (iSupportC5 >= 0) ? true : false;
 
 	bool ret = client.connectToSocket(strCommuIP, 600, 1000);
 	if (!ret)
 		juce::AlertWindow::showMessageBox(juce::AlertWindow::WarningIcon, juce::CharPointer_UTF8("\xe8\xbf\x9e\xe6\x8e\xa5\xe9\x80\x9a\xe8\xae\xaf\xe6\x9c\x8d\xe5\x8a\xa1\xe5\x99\xa8\xe5\xa4\xb1\xe8\xb4\xa5\xef\xbc\x8c\xe7\xa1\xae\xe8\xae\xa4\xe7\xbd\x91\xe7\xbb\x9c\xe9\x80\x9a\xe8\xae\xaf\xe6\x98\xaf\xe5\x90\xa6\xe6\xad\xa3\xe5\xb8\xb8"), "");
-    //[/Constructor]
+    
+	bool conret = m_mfClient.connectToSocket(strCommuIP, 9000, 1000);
+
+	//连接主画面失败
+
+	if (!conret)
+		AlertWindow::showMessageBox(AlertWindow::AlertIconType::InfoIcon, "", String(juce::CharPointer_UTF8("\xe8\xbf\x9e\xe6\x8e\xa5\xe4\xb8\xbb\xe7\x94\xbb\xe9\x9d\xa2\xe5\xa4\xb1\xe8\xb4\xa5")));
+	m_sent2ServerIndex = 0;
+	LOGWT("主画面 IP地址：%s", strCommuIP.toStdString().c_str());
+
+	m_mfClient.SetComponent(this);
+
+	bool retc = sever.beginWaitingForSocket(5005);
+	juce::String logFileSubDirectoryName = "LabelLog";
+	juce::String logFileName = "LabelLog";
+	logFileName << juce::Time::getCurrentTime().formatted("%Y-%m-%d_%H-%M-%S");
+	juce::String welcomeMessage = "Welcom log message for label";
+	juce::int64 maxInitialFileSizeBytes = 5 * 1024 * 1024;
+
+	//g_log = new juce::FileLogger(juce::File::getCurrentWorkingDirectory().getChildFile(logFileSubDirectoryName)
+	//    .getChildFile(logFileName),
+	//    welcomeMessage, maxInitialFileSizeBytes);
+
+
+	int m_iSpeedRatio;
+	m_iUsePLCSpeed = 0; //默认用软件评估速度
+	g_configFile.LoadPara(m_nRollMarks[0][0], m_nRollMarks[0][1], m_nRollMarks[1][0], m_nRollMarks[1][1], m_iSpeedRatio, m_EASumLen);
+	if (m_nRollMarks[0][0] < 10)
+		m_nRollMarks[0][0] = 10;
+	if (m_nRollMarks[0][1] < 10)
+		m_nRollMarks[0][1] = 10;
+	if (m_nRollMarks[1][0] < 10)
+		m_nRollMarks[1][0] = 10;
+	if (m_nRollMarks[1][1] < 10)
+		m_nRollMarks[1][1] = 10;
+
+	_strPLCIP = strPLCIP;
+	stickmarker = new StickMarker(_strPLCIP);
+	_edition = 1;
+	g_configFile.GetEdition(_edition);
+	stickmarker->setEdition(_edition);
+	_bSupportMarkCode = false;
+
+	String strIP;
+	int port;
+	int ioPort[4] = { -1,-1,-1,-1 };
+	ret = g_configFile.GetMarkingServerAddr(strIP, port, ioPort, _bSupportMarkCode);
+	//if (ret == 0 || ioPort[0] < 0)
+	//{
+	//	AlertWindow::showMessageBox(AlertWindow::WarningIcon, L"配置项缺失喷码IP和端口", L"");
+	//}
+	LOGWT("喷码IP及端口配置：%s %d", strIP, port);
+
+	LOGWT("喷码IO配置：%d %d %d %d", ioPort[0], ioPort[1], ioPort[2], ioPort[3]);
+
+	//_markingEng = new SocketMarker(this, strIP, port);//喷墨通讯
+	//_markingEng->SetMarkerEnable(false);
+	//_markingEng->SetSendMode(SendMode_Direct);
+
+	_ioPorts[0] = 0;
+	_ioPorts[1] = 2;
+	_ioPorts[2] = 4;
+	_ioPorts[3] = 6;
+	_pulseLast = 50;
+	ret = g_configFile.GetMarkingIOPorts(_ioPorts, _pulseLast);
+	LOGWT("打标机IO配置：%d %d %d %d", _ioPorts[0], _ioPorts[1], _ioPorts[2], _ioPorts[3]);
+
+
+	m_bSupportStick_Remain = false;
+	int stickRemain = 0;
+	ret = g_configFile.GetRemainStick(stickRemain);
+	m_bSupportStick_Remain = stickRemain;
+	LOGWT("残留打标：%d", m_bSupportStick_Remain);
+
+	int styleUI = 0;
+	if (g_configFile.GetUIMode(styleUI))
+		m_bNewUI = styleUI;
+	else
+		AlertWindow::showMessageBox(AlertWindow::WarningIcon, L"配置项缺失主画面模式配置", L"");
+	LOGWT("UI消息方式m_bNewUI：%d", m_bNewUI);
+
+	g_pWriteThread_codeTrans = new WriteCommData();
+	g_pWriteThread_codeTrans->startThread();
+	for (int i = 0; i < 4; i++)
+		preCmdTime[i] = Time::currentTimeMillis();
+
+	CLabelDM[0]->SetIOports(_ioPorts);
+	CLabelDM[1]->SetIOports(_ioPorts);
+
+
+	CLabelDM[0]->SetEALength(m_EASumLen);
+	CLabelDM[1]->SetEALength(m_EASumLen);
+
+	int bC4MarkLocal = 1;
+	g_configFile.GetC4Mode(bC4MarkLocal);
+	if (bC4MarkLocal >= 1)
+		m_bUseLocal = true;
+	else
+		m_bUseLocal = 0;
+	LOGWT("本地4连标（1.本地 0.打标机PLC：%d", m_bUseLocal);
+
+	stickmarker->m_bLocalC4 = m_bUseLocal;
+	startTimer(5000);
+
+	// 心跳信号线程
+	//只有6003_X9 C2 尝试过
+	//std::thread th1(threadOfTimer);
+	//th1.detach();
+	//[/Constructor]
 }
 
 MonitorForm::~MonitorForm()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
 	_threadShouldExit = true;
-	juce::Thread::sleep(1000);
+	juce::Thread::sleep(500);
+	LOGWT("软件退出!");
+	CreateNewRoll();
 	if (CLabelDM[0] != NULL)
 	{
 		delete CLabelDM[0];
@@ -452,6 +569,61 @@ MonitorForm::~MonitorForm()
 		delete dataModels;
 	}
     //[/Destructor]
+}
+
+void MonitorForm::timerCallback()
+{
+	ReconnectAll();
+
+	juce::int64 curTime = Time::currentTimeMillis();
+	for (int i = 0; i < 4; ++i)
+	{
+		configureForm->updateMarkCount(i, Num_Mark[i]);
+		_preCheckTime[i] = Time::currentTimeMillis();
+	}
+
+	_objectLock.enter();
+	if (m_mfClient.isConnected())
+	{
+		if (m_sent2ServerIndex < m_stickInfos.size())
+		{
+			StickMarkInfo sf = m_stickInfos[m_sent2ServerIndex];
+			if (sf.bSticked)
+			{
+				m_mfClient.SendData(sf);
+				m_sent2ServerIndex++;
+			}
+		}
+	}
+	_objectLock.exit();
+
+
+	mute_codeTrans.enter();
+	if (!g_stickNumCount_codeTrans.empty())
+	{
+		for (int i = 0; i < g_stickNumCount_codeTrans.size(); ++i)
+		{
+			m_mfClient.SendData(g_stickNumCount_codeTrans[i]);
+		}
+		g_stickNumCount_codeTrans.clear();
+	}
+	mute_codeTrans.exit();
+}
+
+void MonitorForm::sendPlcCommand(int ioPort)
+{
+	Pci1230WriteDoBit(15, ioPort, 1);
+	for (int i = 0; i < 4; ++i)
+	{
+		if (isMarkerOnUse[i] && ioPort == _ioPorts[0])
+		{
+			Num_Mark[0]++;
+			_preStickTime[0] = juce::Time::currentTimeMillis();
+			String log = String(i) + String(juce::CharPointer_UTF8("\xe5\x8f\xb7\xe6\x89\x93\xe6\xa0\x87\xe6\x9c\xba\xe6\x89\x8b\xe5\x8a\xa8\xe5\x87\xba\xe6\xa0\x87"));
+			LOGWT(log.toStdString().c_str());
+		}
+
+	}
 }
 
 //==============================================================================
@@ -542,6 +714,499 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void MonitorForm::HandleMessage(int flag, double& speed) //四联标信息
+{
+	juce::int64 curTime = Time::currentTimeMillis();
+	double dSpeed = speed * 1000. / 60000; //10m/min-->mm/ms
+	int sleepTime = 30;
+	if (dSpeed > 0.5)
+		sleepTime = 50. / dSpeed + 30;
+
+	if (sleepTime < 300)
+		sleepTime = 300;
+
+	_finsLock.enter();
+
+	if ((flag == -75 || flag == -175) && isMarkerOnUse[0]) //给带路1发送打标信号
+	{
+		if (!isMarkerOnUse[0])
+		{
+			//带路1禁用,接收4连标指令无效
+
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""1\xe7\xa6\x81\xe7\x94\xa8,\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		//连续发送4连标指令
+		if ((curTime - preCmdTime[0]) < 100000) //100s以内不能重复4连标
+		{
+			//"带路1接收4连标指令时间跟上次小于100s，无效"
+
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""1\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xb6\xe9\x97\xb4\xe8\xb7\x9f\xe4\xb8\x8a\xe6\xac\xa1\xe5\xb0\x8f\xe4\xba\x8e""100s\xef\xbc\x8c\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		preCmdTime[0] = curTime;
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""1\xe6\x94\xb6\xe5\x88\xb0""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4,\xe9\x80\x9f\xe5\xba\xa6=%f,EA=%d")).toStdString().c_str(),
+			speed, m_curEA[0]);
+		//发4连标指令	
+		if (m_bUseLocal)
+		{
+			for (int i = 0; i < 4 && speed>0.5; i++)
+			{
+				Pci1230WriteDoBit(15, _ioPorts[0], 1);
+				juce::Thread::sleep(50);
+				Pci1230WriteDoBit(15, _ioPorts[0], 0);
+				juce::Thread::sleep(sleepTime);
+				Num_Mark[0] += 1;
+				LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""1\xe5\x87\xba\xe7\xac\xac%d\xe4\xb8\xaa""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str(), i + 1);
+				_preStickTime[0] = Time::currentTimeMillis() + 1000;
+			}
+		}
+
+		if (!m_bUseLocal) //使用超音速
+		{
+			bool ret = stickmarker->SendCmd(4432, 1);
+			_preStickTime[0] = Time::currentTimeMillis() + 2000;
+			//Num_Mark[0] += 4;
+		}
+		stickmarker->m_bC4Mark[0] = true;
+
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""1\xe5\x87\xba\xe5\xae\x8c""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str());
+		m_continue4StickEA[0] = m_curEA[0];
+
+
+		//Num_Mark[0] += 4;
+		//preCmdTime[0] = curTime;
+		_preStickLenPos_codeTrans[0] = _curRunningLenPos_codeTrans[0];
+		//连续发送4连标指令后，给通讯服务器发送关闭信号
+
+		//
+		if (client.isConnected())
+		{
+			INTER_MESSAGE data;
+			data._spec = 201404;
+			data._flag = flag;
+			client.SendData(data);
+
+		}
+	}
+	else if ((flag == -76 || flag == -176) && isMarkerOnUse[1]) //给带路2发送打标信号
+	{
+		if (!isMarkerOnUse[1])
+		{
+			//"带路2禁用,接收4连标指令无效"
+
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""2\xe7\xa6\x81\xe7\x94\xa8,\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		if ((curTime - preCmdTime[1]) < 100000) //100s以内不能重复4连标
+		{
+			//"带路2接收4连标指令时间跟上次小于100s，无效"
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""2\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xb6\xe9\x97\xb4\xe8\xb7\x9f\xe4\xb8\x8a\xe6\xac\xa1\xe5\xb0\x8f\xe4\xba\x8e""100s\xef\xbc\x8c\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""2\xe6\x94\xb6\xe5\x88\xb0""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4,\xe9\x80\x9f\xe5\xba\xa6=%f,EA=%d")).toStdString().c_str(), speed, m_curEA[1]);
+		preCmdTime[1] = curTime;
+		//发4连标指令
+		if (m_bUseLocal)
+		{
+			for (int i = 0; i < 4 && speed>0.5; i++)
+			{
+				Pci1230WriteDoBit(15, _ioPorts[1], 1);
+				juce::Thread::sleep(50);
+				Pci1230WriteDoBit(15, _ioPorts[1], 0);
+				juce::Thread::sleep(sleepTime);
+				Num_Mark[1] += 1;
+
+				LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""2\xe5\x87\xba\xe7\xac\xac%d\xe4\xb8\xaa""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str(), i + 1);
+				_preStickTime[1] = Time::currentTimeMillis() + 1000;
+
+			}
+		}
+		//LOGWT("带路2出完4连标");
+		m_continue4StickEA[1] = m_curEA[1];
+
+		if (!m_bUseLocal)
+		{
+			bool ret = stickmarker->SendCmd(4436, 1);
+			_preStickTime[1] = Time::currentTimeMillis() + 2000;
+			//Num_Mark[1] += 4;
+		}
+		stickmarker->m_bC4Mark[1] = true;
+		//Num_Mark[1] += 4;
+		//preCmdTime[1] = curTime;
+		_preStickLenPos_codeTrans[1] = _curRunningLenPos_codeTrans[1];
+		//连续发送4连标指令后，给通讯服务器发送关闭信号
+		if (client.isConnected())
+		{
+			INTER_MESSAGE data;
+			data._spec = 201404;
+			data._flag = flag;
+			client.SendData(data);
+
+		}
+	}
+	else if ((flag == -77 || flag == -177) && isMarkerOnUse[2]) //给带路3发送打标信号
+	{
+		if (!isMarkerOnUse[2])
+		{
+			//"带路3禁用,接收4连标指令无效"
+
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""3\xe7\xa6\x81\xe7\x94\xa8,\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		if ((curTime - preCmdTime[2]) < 100000) //100s以内不能重复4连标
+		{
+			//带路3接收4连标指令时间跟上次小于100s，无效
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""3\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xb6\xe9\x97\xb4\xe8\xb7\x9f\xe4\xb8\x8a\xe6\xac\xa1\xe5\xb0\x8f\xe4\xba\x8e""100s\xef\xbc\x8c\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		//带路3收到4连标指令,速度=%f,EA=%d
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""3\xe6\x94\xb6\xe5\x88\xb0""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4,\xe9\x80\x9f\xe5\xba\xa6=%f,EA=%d")).toStdString().c_str(),
+			speed, m_curEA[2]);
+		preCmdTime[2] = curTime;
+		//发4连标指令
+		if (m_bUseLocal)
+		{
+			for (int i = 0; i < 4 && speed>0.5; i++)
+			{
+				Pci1230WriteDoBit(15, _ioPorts[2], 1);
+				juce::Thread::sleep(50);
+				Pci1230WriteDoBit(15, _ioPorts[2], 0);
+				juce::Thread::sleep(sleepTime);
+				Num_Mark[2] += 1;
+				//带路3出第%d个4连标
+				LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""3\xe5\x87\xba\xe7\xac\xac%d\xe4\xb8\xaa""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str(), i + 1);
+				_preStickTime[2] = Time::currentTimeMillis() + 1000;
+			}
+		}
+		//"带路3出完4连标"
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""3\xe5\x87\xba\xe5\xae\x8c""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str());
+		m_continue4StickEA[2] = m_curEA[2];
+		if (!m_bUseLocal)
+		{
+			bool ret = stickmarker->SendCmd(4440, 1);
+			_preStickTime[2] = Time::currentTimeMillis() + 2000;
+			//Num_Mark[2] += 4;
+		}
+		stickmarker->m_bC4Mark[2] = true;
+		//Num_Mark[2] += 4;
+		//preCmdTime[2] = curTime;
+		_preStickLenPos_codeTrans[2] = _curRunningLenPos_codeTrans[2];
+		//连续发送4连标指令后，给通讯服务器发送关闭信号
+		if (client.isConnected())
+		{
+			INTER_MESSAGE data;
+			data._spec = 201404;
+			data._flag = flag;
+			client.SendData(data);
+		}
+	}
+	else if ((flag == -78 || flag == -178) && isMarkerOnUse[3]) //给带路4发送打标信号
+	{
+		if (!isMarkerOnUse[3])
+		{
+			//"带路4禁用,接收4连标指令无效"
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""4\xe7\xa6\x81\xe7\x94\xa8,\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+
+		if ((curTime - preCmdTime[3]) < 100000) //100s以内不能重复4连标
+		{
+			//带路4接收4连标指令时间跟上次小于100s，无效
+			LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""4\xe6\x8e\xa5\xe6\x94\xb6""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4\xe6\x97\xb6\xe9\x97\xb4\xe8\xb7\x9f\xe4\xb8\x8a\xe6\xac\xa1\xe5\xb0\x8f\xe4\xba\x8e""100s\xef\xbc\x8c\xe6\x97\xa0\xe6\x95\x88")).toStdString().c_str());
+			_finsLock.exit();
+			return;
+		}
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""4\xe6\x94\xb6\xe5\x88\xb0""4\xe8\xbf\x9e\xe6\xa0\x87\xe6\x8c\x87\xe4\xbb\xa4,\xe9\x80\x9f\xe5\xba\xa6=%f,EA=%d")).toStdString().c_str(), speed, m_curEA[3]);
+		preCmdTime[3] = curTime;
+		//发4连标指令
+		if (m_bUseLocal)
+		{
+			for (int i = 0; i < 4 && speed>0.5; i++)
+			{
+				Pci1230WriteDoBit(15, _ioPorts[3], 1);
+				juce::Thread::sleep(50);
+				Pci1230WriteDoBit(15, _ioPorts[3], 0);
+				juce::Thread::sleep(sleepTime);
+				Num_Mark[3] += 1;
+				LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""4\xe5\x87\xba\xe7\xac\xac%d\xe4\xb8\xaa""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str(), i + 1);
+				_preStickTime[3] = Time::currentTimeMillis() + 1000;
+
+			}
+		}
+		LOGWT(String(juce::CharPointer_UTF8("\xe5\xb8\xa6\xe8\xb7\xaf""4\xe5\x87\xba\xe5\xae\x8c""4\xe8\xbf\x9e\xe6\xa0\x87")).toStdString().c_str());
+		m_continue4StickEA[3] = m_curEA[3];
+
+		if (!m_bUseLocal)
+		{
+			bool ret = stickmarker->SendCmd(4444, 1);
+			_preStickTime[3] = Time::currentTimeMillis() + 2000;
+			//Num_Mark[3] += 4;
+		}
+		stickmarker->m_bC4Mark[3] = true;
+		//Num_Mark[3] += 4;
+		//preCmdTime[3] = curTime;
+		_preStickLenPos_codeTrans[3] = _curRunningLenPos_codeTrans[3];
+		//连续发送4连标指令后，给通讯服务器发送关闭信号
+		if (client.isConnected())
+		{
+			INTER_MESSAGE data;
+			data._spec = 201404;
+			data._flag = flag;
+			client.SendData(data);
+		}
+	}
+	_finsLock.exit();
+}
+void MonitorForm::HandleClientMessage(juce::String host, HDataMessage* pMessage)
+{
+	int iRoad = pMessage->data.iRoad;
+	StickMarkInfo tm;
+	int ioPort = -1;
+	if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 1)
+	{
+		tm.roadUser = 1;
+		ioPort = _ioPorts[0];
+	}
+	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 1)
+	{
+		tm.roadUser = 2;
+		ioPort = _ioPorts[1];
+
+	}
+	else if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 0)
+	{
+		tm.roadUser = 3;
+		ioPort = _ioPorts[2];
+
+	}
+	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 0)
+	{
+		tm.roadUser = 4;
+		ioPort = _ioPorts[3];
+
+	}
+	
+
+	if (iRoad >= 0 && iRoad < 2) //上带路 打标机
+	{
+
+		if (pMessage->data.valid)
+		{
+			pMessage->data.destPos /= 10.;
+
+			tm.codeReason = pMessage->data.code;
+			tm.lenPos = pMessage->data.destPos;
+			strcpy(tm.ip, host.toStdString().c_str());
+
+
+			tm.sendTime = Time::currentTimeMillis();
+			tm.stickTime = Time::currentTimeMillis();
+			tm.road = pMessage->data.iRoad;
+			tm.iSe = pMessage->data.iSel;
+			tm.bSticked = false;
+			tm.EA = pMessage->data.EA;
+			//1,0  0,0   0,1 1,1
+			//AddLabelData内部已经加锁
+			bool ret = CLabelDM[iRoad]->AddLabelData(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.srcPos, pMessage->data.destPos);
+
+
+
+			_objectLock.enter();
+			if (ret)
+			{
+				m_stickInfos.push_back(tm);
+			}
+			//需要确认问题
+			if (g_pWriteThread_codeTrans && ret)
+			{
+
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], " Succ add label from%s: srcPos=%f,iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), pMessage->data.srcPos, iRoad, pMessage->data.iSel, pMessage->data.destPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+			}
+			else if (g_pWriteThread_codeTrans && !ret)
+			{
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], "Fail add label from%s: iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.destPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+
+			}
+			_objectLock.exit();
+
+		}
+		else
+		{
+			pMessage->data.srcPos /= 10.;
+			double dSpeed = client.GetMachineSpeed();
+			double destPos = 0.;
+
+			_objectLock.enter();
+
+			// 如果设备运行中新卷了
+			if (m_bSupportStick_Remain && pMessage->data.srcPos < 600 && (_curRunningLenPos_codeTrans[tm.roadUser - 1] - pMessage->data.srcPos) >= 1000.)
+			{
+				for (int i = 0; i < m_stickInfos.size(); i++) //停机情况下新卷开始，保存改带路未被打标的数据
+				{
+					if (m_stickInfos[i].bSticked || m_stickInfos[i].roadUser <= 0)
+						continue;
+					bool bSkip = false;
+					for (int j = i + 1; j < m_stickInfos.size(); j++) //停机情况下新卷开始，保存改带路未被打标的数据
+					{
+						//如果后面一个已经出标，则改打标信息不应该存在
+						if (m_stickInfos[j].bSticked && m_stickInfos[i].road == m_stickInfos[j].road &&  m_stickInfos[i].iSe == m_stickInfos[j].iSe)
+						{
+							bSkip = true;
+							break;
+						}
+						if (m_stickInfos[j].bSticked && (m_stickInfos[j].lenPos - m_stickInfos[i].lenPos) >= m_EASumLen * 0.5) //4m以后出现已经出标的，则前面的也不应该出现
+						{
+							bSkip = true;
+							break;
+						}
+					}
+					if (bSkip)
+						continue;
+
+					if (_curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1] < m_stickInfos[i].lenPos) //有效
+					{
+						m_stickInfos[i].lenPos = m_stickInfos[i].lenPos - _curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1];
+						m_stickInfoReserves.push_back(m_stickInfos[i]);
+						m_stickInfos.erase(m_stickInfos.begin() + i);
+						i--;
+					}
+				}
+			}
+
+			_curRunningLenPos_codeTrans[tm.roadUser - 1] = pMessage->data.srcPos;
+
+			if (/*g_iUsePLCSpeed &&*/ dSpeed > 5.)
+			{
+				juce::int64 diffT = juce::Time::getCurrentTime().toMilliseconds() - client.m_recTime;
+				if (diffT < 0) diffT = -diffT;
+
+				if (diffT < 5000)
+					pMessage->data.speed = dSpeed;
+			}
+
+
+			//测试
+			if (false && g_pWriteThread_codeTrans)
+			{
+				char szTm[256] = { 0 };
+				juce::Time time = juce::Time::getCurrentTime();
+				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+				sprintf(&szTm[index], " ***position  from %s***: iRoad=%d,  iSel=%d, curPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.srcPos);
+				g_pWriteThread_codeTrans->AddDebugData(szTm);
+			}
+
+			m_sumEars = (juce::int64)pMessage->data.destPos;
+			m_curEA[tm.roadUser - 1] = m_sumEars;
+
+			//过滤4连标的瑕疵打标
+			bool bValid = true;
+			if (m_curEA[tm.roadUser - 1] > 0 && m_curEA[tm.roadUser - 1] == m_continue4StickEA[tm.roadUser - 1])
+			{
+				bValid = false;
+			}
+
+			//RunningLength内部已经加锁
+			bool bSticked = false;
+			if (bValid)
+				bSticked = CLabelDM[iRoad]->RunningLength(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.speed, pMessage->data.srcPos, destPos);
+			if (bSticked)
+			{
+				Num_Mark[tm.roadUser - 1]++;
+			}
+
+
+
+
+			m_preSentPos[iRoad][pMessage->data.iSel] = pMessage->data.srcPos;
+			m_sentCount[iRoad]++;
+			if (m_sentCount[iRoad] > 900000000)
+			{
+				m_sentCount[iRoad] = 0;
+			}
+
+			if (bSticked)
+			{
+				for (int i = 0; i < m_stickInfos.size(); i++)
+				{
+					if (m_stickInfos[i].bSticked || m_stickInfos[i].road != pMessage->data.iRoad || m_stickInfos[i].iSe != pMessage->data.iSel)
+						continue;
+
+					if (fabs(m_stickInfos[i].lenPos - destPos) < 5.)
+					{
+						m_stickInfos[i].bSticked = true;
+						m_stickInfos[i].stickTime = Time::currentTimeMillis();
+
+						//判读是否某个带路连续5个EA打标
+						if (m_iSupportCM5 >= 2)
+						{
+							int roadConti[4] = { 0,0,0,0 };
+							double eaOrders[4] = { -1,-1,-1,-1 };
+							for (int j = 0; j < m_stickInfos.size(); j++)
+							{
+								int roadM = m_stickInfos[j].roadUser;
+								if (roadM >= 1 && roadM <= 4)
+								{
+									if (j < m_roadsSearch[roadM - 1])
+										continue;
+
+									if (eaOrders[roadM - 1] < 0 || (abs(m_stickInfos[j].lenPos - eaOrders[roadM - 1]) <= m_EASumLen * 1.5))
+									{
+										roadConti[roadM - 1]++;
+										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
+									}
+									else
+									{
+										roadConti[roadM - 1] = 1;
+										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
+									}
+									if (roadConti[roadM - 1] >= m_iSupportCM5)
+									{
+										m_roadsSearch[roadM - 1] = j;
+										String info = L"带路";
+										info << roadM << L"连续贴标停机!";
+										stickmarker->StopMachine(info);
+										break;
+									}
+								}
+							}
+						}
+
+
+						//需要确认问题
+						if (g_pWriteThread_codeTrans)
+						{
+							char szTm[256] = { 0 };
+							juce::Time time = juce::Time::getCurrentTime();
+							int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
+							sprintf(&szTm[index], " ***Succ label from %s ***: iRoad=%d, iSel=%d, destPos=%f\n", m_stickInfos[i].ip, iRoad, pMessage->data.iSel, destPos);
+							g_pWriteThread_codeTrans->AddDebugData(szTm);
+						}
+						break;
+					}
+				}
+			}
+			_objectLock.exit();
+
+		}
+	}
+}
+
 void MonitorForm::ReconnectAll()
 {
 	bool ret = true;
@@ -612,289 +1277,6 @@ bool MonitorForm::SendCmd(int addr, int val)
 	_cs.exit();
 	return true;
 
-}
-
-void MonitorForm::HandleClientMessage(juce::String host, HDataMessage *pMessage)
-{
-	int iRoad = pMessage->data.iRoad;
-	StickMarkInfo tm;
-	int ioPort = -1;
-	if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 1)
-	{
-		tm.roadUser = 1;
-		ioPort = _ioPorts[0];
-	}
-	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 1)
-	{
-		tm.roadUser = 2;
-		ioPort = _ioPorts[1];
-
-	}
-	else if (pMessage->data.iRoad == 0 && pMessage->data.iSel == 0)
-	{
-		tm.roadUser = 3;
-		ioPort = _ioPorts[2];
-
-	}
-	else if (pMessage->data.iRoad == 1 && pMessage->data.iSel == 0)
-	{
-		tm.roadUser = 4;
-		ioPort = _ioPorts[3];
-
-	}
-	//喷码测试
-	/*if (pMessage->data.code < 0)
-	{
-		double destPos = pMessage->data.destPos * 0.1;
-		MarkerMessage* msg = nullptr; (1, 128, -1, 0);
-		for (int i = 0; i < m_stickInfos.size(); i++)
-		{
-			if (m_stickInfos[i].lenPos < destPos &&
-				m_stickInfos[i].road == pMessage->data.iRoad &&
-				m_stickInfos[i].iSe == pMessage->data.iSel &&
-				(destPos - m_stickInfos[i].lenPos) < m_EASumLen)
-			{
-				int type = ProduceDefectCode(m_stickInfos[i].codeReason);
-				NGPosition pos((Marker_Defect_Type)type);
-				if (msg == nullptr)
-				{
-					msg = new MarkerMessage(type - 1, 128, -1, 0);
-					msg->AddNGMark(pos);
-					continue;
-				}
-				msg->AddNGMark(pos);
-
-			}
-		}
-		if (msg)
-		{
-			_markingEng->SetMarkerEnable(true);
-			_markingEng->SendIOSigAndMarkerMsg(ioPort, *msg, _pulseLast);
-			delete msg;
-		}
-	}*/
-	//
-
-	//上带路 打标机
-
-	if (iRoad >= 0 && iRoad < 2)
-	{
-
-		if (pMessage->data.valid)
-		{
-			pMessage->data.destPos /= 10.;
-
-			tm.codeReason = pMessage->data.code;
-			tm.lenPos = pMessage->data.destPos;
-			strcpy(tm.ip, host.toStdString().c_str());
-
-
-			tm.sendTime = Time::currentTimeMillis();
-			tm.stickTime = Time::currentTimeMillis();
-			tm.road = pMessage->data.iRoad;
-			tm.iSe = pMessage->data.iSel;
-			tm.bSticked = false;
-			tm.EA = pMessage->data.EA;
-			//1,0  0,0   0,1 1,1
-			//AddLabelData内部已经加锁
-
-			bool ret = CLabelDM[iRoad]->AddLabelData(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.srcPos, pMessage->data.destPos);
-
-
-
-			_objectLock.enter();
-			if (ret)
-			{
-				m_stickInfos.push_back(tm);
-			}
-			//需要确认问题
-
-			if (g_pWriteThread_codeTrans != nullptr && ret)
-			{
-				char szTm[256] = { 0 };
-				juce::Time time = juce::Time::getCurrentTime();
-				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
-				sprintf(&szTm[index], " Succ add label from%s: srcPos=%f,iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), pMessage->data.srcPos, iRoad, pMessage->data.iSel, pMessage->data.destPos);
-				g_pWriteThread_codeTrans->AddDebugData(szTm);
-			}
-			else if (g_pWriteThread_codeTrans != nullptr && !ret)
-			{
-				char szTm[256] = { 0 };
-				juce::Time time = juce::Time::getCurrentTime();
-				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
-				sprintf(&szTm[index], "Fail add label from%s: iRoad=%d, iSel=%d, destPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.destPos);
-				g_pWriteThread_codeTrans->AddDebugData(szTm);
-
-			}
-			_objectLock.exit();
-
-		}
-		else
-		{
-			pMessage->data.srcPos /= 10.;
-			double dSpeed = client.GetMachineSpeed();
-			double destPos = 0.;
-
-			_objectLock.enter();
-
-			// 如果设备运行中新卷了
-
-			if (m_bSupportStick_Remain && pMessage->data.srcPos < 600 && (_curRunningLenPos_codeTrans[tm.roadUser - 1] - pMessage->data.srcPos) >= 1000.)
-			{
-				//停机情况下新卷开始，保存改带路未被打标的数据
-
-				for (int i = 0; i < m_stickInfos.size(); i++)
-				{
-					if (m_stickInfos[i].bSticked || m_stickInfos[i].roadUser <= 0)
-						continue;
-					bool bSkip = false;
-					//停机情况下新卷开始，保存改带路未被打标的数据
-
-					for (int j = i + 1; j < m_stickInfos.size(); j++)
-					{
-						//如果后面一个已经出标，则改打标信息不应该存在
-
-						if (m_stickInfos[j].bSticked && m_stickInfos[i].road == m_stickInfos[j].road &&  m_stickInfos[i].iSe == m_stickInfos[j].iSe)
-						{
-							bSkip = true;
-							break;
-						}
-						if (m_stickInfos[j].bSticked && (m_stickInfos[j].lenPos - m_stickInfos[i].lenPos) >= m_EASumLen * 0.5) //4m以后出现已经出标的，则前面的也不应该出现
-						{
-							bSkip = true;
-							break;
-						}
-					}
-					if (bSkip)
-						continue;
-
-					if (_curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1] < m_stickInfos[i].lenPos) //有效
-					{
-						m_stickInfos[i].lenPos = m_stickInfos[i].lenPos - _curRunningLenPos_codeTrans[m_stickInfos[i].roadUser - 1];
-						m_stickInfoReserves.push_back(m_stickInfos[i]);
-						m_stickInfos.erase(m_stickInfos.begin() + i);
-						i--;
-					}
-				}
-			}
-
-			_curRunningLenPos_codeTrans[tm.roadUser - 1] = pMessage->data.srcPos;
-
-			if (/*g_iUsePLCSpeed &&*/ dSpeed > 5.)
-			{
-				juce::int64 diffT = juce::Time::getCurrentTime().toMilliseconds() - client.m_recTime;
-				if (diffT < 0) diffT = -diffT;
-
-				if (diffT < 5000)
-					pMessage->data.speed = dSpeed;
-			}
-
-
-
-			if (false && g_pWriteThread_codeTrans)
-			{
-				char szTm[256] = { 0 };
-				juce::Time time = juce::Time::getCurrentTime();
-				int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
-				sprintf(&szTm[index], " ***position  from %s***: iRoad=%d,  iSel=%d, curPos=%f\n", host.toStdString().c_str(), iRoad, pMessage->data.iSel, pMessage->data.srcPos);
-				g_pWriteThread_codeTrans->AddDebugData(szTm);
-			}
-
-			m_sumEars = (juce::int64)pMessage->data.destPos;
-			m_curEA[tm.roadUser - 1] = m_sumEars;
-
-
-			bool bValid = true;
-			if (m_curEA[tm.roadUser - 1] > 0 && m_curEA[tm.roadUser - 1] == m_continue4StickEA[tm.roadUser - 1])
-			{
-				bValid = false;
-			}
-
-			bool bSticked = false;
-			if (bValid)
-				bSticked = CLabelDM[iRoad]->RunningLength(pMessage->data.iRoad, pMessage->data.iSel, pMessage->data.speed, pMessage->data.srcPos, destPos);
-			if (bSticked)
-			{
-				Num_Mark[tm.roadUser - 1]++;
-			}
-
-
-
-
-			m_preSentPos[iRoad][pMessage->data.iSel] = pMessage->data.srcPos;
-			m_sentCount[iRoad]++;
-			if (m_sentCount[iRoad] > 900000000)
-			{
-				m_sentCount[iRoad] = 0;
-			}
-
-			if (bSticked)
-			{
-				for (int i = 0; i < m_stickInfos.size(); i++)
-				{
-					if (m_stickInfos[i].bSticked || m_stickInfos[i].road != pMessage->data.iRoad || m_stickInfos[i].iSe != pMessage->data.iSel)
-						continue;
-
-					if (fabs(m_stickInfos[i].lenPos - destPos) < 5.)
-					{
-						m_stickInfos[i].bSticked = true;
-						m_stickInfos[i].stickTime = Time::currentTimeMillis();
-
-						//判读是否某个带路连续5个EA打标
-
-						if (m_iSupportCM5 >= 2)
-						{
-							int roadConti[4] = { 0,0,0,0 };
-							double eaOrders[4] = { -1,-1,-1,-1 };
-							for (int j = 0; j < m_stickInfos.size(); j++)
-							{
-								int roadM = m_stickInfos[j].roadUser;
-								if (roadM >= 1 && roadM <= 4)
-								{
-									if (j < m_roadsSearch[roadM - 1])
-										continue;
-
-									if (eaOrders[roadM - 1] < 0 || (abs(m_stickInfos[j].lenPos - eaOrders[roadM - 1]) <= m_EASumLen * 1.5))
-									{
-										roadConti[roadM - 1]++;
-										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
-									}
-									else
-									{
-										roadConti[roadM - 1] = 1;
-										eaOrders[roadM - 1] = m_stickInfos[j].lenPos;
-									}
-									if (roadConti[roadM - 1] >= m_iSupportCM5)
-									{
-										m_roadsSearch[roadM - 1] = j;
-										String info = L"带路";
-										info << roadM << L"连续贴标停机!";
-										stickmarker->StopMachine(info);
-										break;
-									}
-								}
-							}
-						}
-
-
-						//需要确认问题
-
-						if (g_pWriteThread_codeTrans)
-						{
-							char szTm[256] = { 0 };
-							juce::Time time = juce::Time::getCurrentTime();
-							int index = sprintf(szTm, "%d_%d_%d_%d:%d:%d", time.getYear(), time.getMonth() + 1, time.getDayOfMonth(), time.getHours(), time.getMinutes(), time.getSeconds());
-							sprintf(&szTm[index], " ***Succ label from %s ***: iRoad=%d, iSel=%d, destPos=%f\n", m_stickInfos[i].ip, iRoad, pMessage->data.iSel, destPos);
-							g_pWriteThread_codeTrans->AddDebugData(szTm);
-						}
-						break;
-					}
-				}
-			}
-			_objectLock.exit();
-
-		}
-	}
 }
 
 void MonitorForm::CreateNewRoll()

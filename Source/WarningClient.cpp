@@ -26,17 +26,17 @@ double WarningClient::GetMachineSpeed()
 
 void WarningClient::messageReceived(const juce::MemoryBlock& message)
 {
-	//接受Communication发送过来的数据,主要是打标速度
+	//陆脫脢脺Communication路垄脣脥鹿媒脌麓碌脛脢媒戮脻,脰梅脪陋脢脟麓貌卤锚脣脵露脠
 	//m_speed = msg.speed;
 	if (message.getSize() < sizeof(INTER_MESSAGE))
 		return;
 
 	INTER_MESSAGE msg;
 	memcpy(&msg, message.getData(), sizeof(INTER_MESSAGE));
-	/*LOGWT("%s", "收到通讯服务器消息");
+	/*LOGWT("%s", "脢脮碌陆脥篓脩露路镁脦帽脝梅脧没脧垄");
 	LOGWT("msg.flag:%s", String(msg._flag).toStdString().c_str());*/
 
-	if (msg._flag == -65)//communication通讯 获取模切机速度
+	if (msg._flag == -65)//communication脥篓脩露 禄帽脠隆脛拢脟脨禄煤脣脵露脠
 	{
 		m_speed = msg._data/10.; //m/min
 		if (m_speed <= 2.)
@@ -45,19 +45,19 @@ void WarningClient::messageReceived(const juce::MemoryBlock& message)
 	}
 	//else
 	//{
-	//	LOGWT("收到通讯服务器消息Flag=%d", msg._flag);
+	//	LOGWT("脢脮碌陆脥篓脩露路镁脦帽脝梅脧没脧垄Flag=%d", msg._flag);
 	//}
 	
-	//带路1： -75, 带路2： -76 带路3： -77 带路4： -78
-	//先导:-175 -176  -177 -178
-	if ((msg._flag >= -78 && msg._flag <= -75)|| (msg._flag >= -178 && msg._flag <= -175))//communication通讯 获取四联标信号
+	//麓酶脗路1拢潞 -75, 麓酶脗路2拢潞 -76 麓酶脗路3拢潞 -77 麓酶脗路4拢潞 -78
+	//脧脠碌录:-175 -176  -177 -178
+	if ((msg._flag >= -78 && msg._flag <= -75)|| (msg._flag >= -178 && msg._flag <= -175))//communication脥篓脩露 禄帽脠隆脣脛脕陋卤锚脨脜潞脜
 	{
 		((MainComponent*)_mainComponent)->HandleMessage(msg._flag,m_speed);
 		
 		m_speed = msg._data/10.;
 		if (m_speed <= 2.)
 			m_speed = 2.;
-		LOGWT("收到4连标指令:%d，当前速度 %f", msg._flag, m_speed);
+		LOGWT("脢脮碌陆4脕卢卤锚脰赂脕卯:%d拢卢碌卤脟掳脣脵露脠 %f", msg._flag, m_speed);
 	}
 }
 
@@ -97,23 +97,23 @@ void MainFormClient::messageReceived(const juce::MemoryBlock& message)
 	WS_INFO head;
 	memcpy(&head, message.getData(), sizeof(WS_INFO));
 
-	// 解析数据包
-	if (head._type == 6) //膜卷号
+	// 陆芒脦枚脢媒戮脻掳眉
+	if (head._type == 6) //脛陇戮铆潞脜
 	{
 		if (message.getSize() < sizeof(WS_INFO) + sizeof(ROLL_INFO))
 			return;
 
-		// 解析标准尺寸包
+		// 陆芒脦枚卤锚脳录鲁脽麓莽掳眉
 		ROLL_INFO stdSize;
 		memset(&stdSize, 0, sizeof(ROLL_INFO));
 		char* p = (char*)message.getData();
-		p += sizeof(WS_INFO); // 跳过数据包头
+		p += sizeof(WS_INFO); // 脤酶鹿媒脢媒戮脻掳眉脥路
 		memcpy(&stdSize, p, sizeof(ROLL_INFO));
 
 		((MainComponent*)_mainComponent)->ResetAndNewRoll(stdSize._rollName);
 	}
-	// 解析数据包
-	if (head._type == 88) //CCD 重新连接
+	// 陆芒脦枚脢媒戮脻掳眉
+	if (head._type == 88) //CCD 脰脴脨脗脕卢陆脫
 	{
 		((MainComponent*)_mainComponent)->ReconnectAll();
 	}
@@ -167,7 +167,7 @@ int	MainFormClient::SendMsgData(bool bNewUI, juce::String data)
 	msg.ip = 1;
 	msg.isSend2Plc = 1;
 	msg.type = 2;
-	juce::String moduleName = L"打标机报警停机";
+	juce::String moduleName = L"麓貌卤锚禄煤卤篓戮炉脥拢禄煤";
 	char* pmbType;
 	UnicodeToMB1(pmbType, moduleName.toUTF16(), moduleName.length());
 	memset(msg.workStation, 0, 512);
@@ -183,7 +183,7 @@ int	MainFormClient::SendMsgData(bool bNewUI, juce::String data)
 		MemoryBlock msg(&msg, sizeof(WARNING_MES));
 		if (!sendMessage(msg))
 		{
-			LOGWT("发送报警or停机信息到主界面失败!");
+			LOGWT("路垄脣脥卤篓戮炉or脥拢禄煤脨脜脧垄碌陆脰梅陆莽脙忙脢搂掳脺!");
 			return false;
 		}
 	}

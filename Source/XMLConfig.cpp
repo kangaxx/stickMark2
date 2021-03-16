@@ -83,7 +83,8 @@ bool  CXMLConfig::SavePara(int D0, int D1, int U0, int U1,int LicenseLimit,doubl
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return false;
 
 	String strCount = "Product_Count";
 	XmlElement* eleSecret = rootData->getChildByName (strCount);
@@ -141,7 +142,8 @@ void  CXMLConfig::GetEnableWaring(int& enableW)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return;
 
 
 	String strCount = "Product_Count";
@@ -179,7 +181,8 @@ bool  CXMLConfig::LoadPara(int& D0, int& D1, int& U0, int& U1,int& LicenseLimit,
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return false;
 
 
   	String strCount = "Product_Count";
@@ -222,7 +225,8 @@ int   CXMLConfig::GetMarkingIOPorts(int ioPorts[4], int& pulseLast)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return false;
 	String strCount = "Product_Count";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -272,7 +276,8 @@ int    CXMLConfig::GetPLCServerAddr(String& strIP)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "Product_Count";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -305,7 +310,8 @@ int    CXMLConfig::GetCommuServerAddr(String& strIP)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "Product_Count";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -338,7 +344,8 @@ int    CXMLConfig::GetMarkingServerAddr(String& strIP,int& port,int ioPort[4],bo
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "MarkCode";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -395,7 +402,8 @@ int    CXMLConfig::GetUIMode(int& iUIMode)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "UI";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -428,7 +436,8 @@ int    CXMLConfig::GetRemainStick(int& remainStick)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "Product_Count";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -462,7 +471,8 @@ int    CXMLConfig::GetParam(int& licenseLimit)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 
 
   	String strCount = "Product_Count";
@@ -492,7 +502,8 @@ int CXMLConfig::GetContiC5Stop(int& bC5MarkStop)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "StickMarker";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -520,7 +531,8 @@ int CXMLConfig::GetC4Mode(int& bC4MarkLocal)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-	   
+	if (rootData == nullptr)
+		return 0;
 	String strCount = "StickMarker";
 	XmlElement* eleSecret = rootData->getChildByName(strCount);
 
@@ -536,7 +548,7 @@ int CXMLConfig::GetC4Mode(int& bC4MarkLocal)
 }
 int CXMLConfig::GetMarkerState(int* isOnUse)
 {
-	//默认为开启所有打标机
+	//脛卢脠脧脦陋驴陋脝么脣霉脫脨麓貌卤锚禄煤
 	for (int i = 0; i < 4; i++)
 		_ioUse[i] = isOnUse[i] = 1;
 
@@ -554,7 +566,8 @@ int CXMLConfig::GetMarkerState(int* isOnUse)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 
 
 	String strCount = "StickMarker";
@@ -603,7 +616,8 @@ int CXMLConfig::SaveMarkerState(int* isOnUse)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 
 
 	String strCount = "StickMarker";
@@ -639,7 +653,8 @@ int CXMLConfig::GetEdition(int& e)
 	File sFile2(sPath);
 	XmlDocument dataDoc(sFile2);
 	rootData = dataDoc.getDocumentElement();
-
+	if (rootData == nullptr)
+		return 0;
 
 
 	String strCount = "Edition";

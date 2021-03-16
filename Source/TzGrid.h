@@ -132,7 +132,7 @@ struct tzGrid : public Component,
 	void drawRow(int rowIdx, StringArray data)
 	{
 		if (rowsComponents.size() == getRowNum() * getColumNum())
-			return; //创建控件的过程只需要执行一次，如果今后需要添加resize功能则需要调整
+			return; //麓麓陆篓驴脴录镁碌脛鹿媒鲁脤脰禄脨猫脪陋脰麓脨脨脪禄麓脦拢卢脠莽鹿没陆帽潞贸脨猫脪陋脤铆录脫resize鹿娄脛脺脭貌脨猫脪陋碌梅脮没
 		//if (data == NULL)
 		//	return;
 		float top = this->getBordSize() + getTitleHeight()  + rowIdx * getRowHeight();
@@ -184,9 +184,9 @@ struct tzGrid : public Component,
 				tmpCombo->setJustificationType(juce::Justification::centredLeft);
 				tmpCombo->setTextWhenNothingSelected(juce::String());
 				tmpCombo->setTextWhenNoChoicesAvailable(TRANS("(no choices)"));
-				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")), 1); //1 关机
+				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\x85\xb3\xe6\x9c\xba")), 1); //1 鹿脴禄煤
 				tmpCombo->addItem(TRANS(juce::CharPointer_UTF8("\xe5\xbc\x80\xe6\x9c\xba")), 2);
-				tmpCombo->setSelectedId(1); //默认关机
+				tmpCombo->setSelectedId(1); //脛卢脠脧鹿脴禄煤
 				tmpCombo->addListener(this);
 				rowsComponents.add(tmpCombo);
 
@@ -407,13 +407,13 @@ private:
 	std::unique_ptr<juce::TextButton> btnTest;
 	std::unique_ptr<juce::Label> lblWarnNum;
 	std::unique_ptr<juce::TextEditor> txtWarnNum;
-	StringArray gridData; //智能指针数组
+	StringArray gridData; //脰脟脛脺脰赂脮毛脢媒脳茅
 	OwnedArray<GridCellPanel> cells;
 	OwnedArray<ColumnInfo> columns;
 	OwnedArray<TextButton> buttons;
 	OwnedArray<TextButton> titlesButtons;
 	OwnedArray<Component> rowsComponents;
 	SIGNAL_II m_HiddenDelegateII;
-	bool initialed = false; //第一次draw控件时会更改初始化状态
+	bool initialed = false; //碌脷脪禄麓脦draw驴脴录镁脢卤禄谩赂眉赂脛鲁玫脢录禄炉脳麓脤卢
 	
 };

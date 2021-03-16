@@ -142,7 +142,7 @@ ConfigureForm::ConfigureForm ()
     btnNewScroll->setBounds (32, 144, 160, 24);
 
     lblSendSignal.reset (new juce::Label ("new label",
-                                          juce::CharPointer_UTF8 ("\xe5\x8f\x91\xe9\x80\x81\xe4\xbf\xa1\xe5\x8f\xb7")));
+                                          juce::CharPointer_UTF8 ("\xe4\xbf\xa1\xe5\x8f\xb7\xe7\xab\xaf\xe5\x8f\xa3(0 - 31)")));
     addAndMakeVisible (lblSendSignal.get());
     lblSendSignal->setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
     lblSendSignal->setJustificationType (juce::Justification::centredLeft);
@@ -162,7 +162,7 @@ ConfigureForm::ConfigureForm ()
     txtSignal->setPopupMenuEnabled (true);
     txtSignal->setText (TRANS("0"));
 
-    txtSignal->setBounds (136, 200, 240, 24);
+    txtSignal->setBounds (184, 200, 120, 24);
 
     btnSendSignal.reset (new juce::TextButton ("new button"));
     addAndMakeVisible (btnSendSignal.get());
@@ -199,7 +199,7 @@ ConfigureForm::ConfigureForm ()
     txtSetEa->setPopupMenuEnabled (true);
     txtSetEa->setText (TRANS("4020"));
 
-    txtSetEa->setBounds (144, 256, 232, 24);
+    txtSetEa->setBounds (184, 256, 120, 24);
 
     btnReconfig.reset (new juce::TextButton ("btnReconfig"));
     addAndMakeVisible (btnReconfig.get());
@@ -250,6 +250,28 @@ ConfigureForm::~ConfigureForm()
     //[/Destructor]
 }
 
+void ConfigureForm::updateMarkCount(int idx, int count)
+{
+	juce::String value = juce::String(count);
+	switch (idx)
+	{
+	case 1:
+		lblPrintValue_1->setText(value, juce::NotificationType::sendNotification);
+		break;
+	case 2:
+		lblPrintValue_2->setText(value, juce::NotificationType::sendNotification);
+		break;
+	case 3:
+		lblPrintValue_3->setText(value, juce::NotificationType::sendNotification);
+		break;
+	case 4:
+		lblPrintValue_4->setText(value, juce::NotificationType::sendNotification);
+		break;
+	default:
+		break;
+	}
+}
+
 //==============================================================================
 void ConfigureForm::paint (juce::Graphics& g)
 {
@@ -295,6 +317,11 @@ void ConfigureForm::buttonClicked (juce::Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == btnSendSignal.get())
     {
         //[UserButtonCode_btnSendSignal] -- add your button handler code here..
+		int port = BaseFunctions::Str2Int(txtSignal->getText().toStdString(), -1);
+		if ( port < 0 || port > 31)
+			juce::AlertWindow::showMessageBox(juce::AlertWindow::WarningIcon, juce::String(L"端口错误"), juce::String(L"请输入 0 - 31之前的数字"));
+		else
+			m_HiddenDelegateI(port);
         //[/UserButtonCode_btnSendSignal]
     }
     else if (buttonThatWasClicked == btnSetEa.get())
@@ -383,11 +410,12 @@ BEGIN_JUCER_METADATA
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="new label" id="6fb88adc46b34f0f" memberName="lblSendSignal"
          virtualName="" explicitFocusOrder="0" pos="48 200 150 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="&#21457;&#36865;&#20449;&#21495;" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="33"/>
+         edBkgCol="0" labelText="&#20449;&#21495;&#31471;&#21475;(0 - 31)"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
+         italic="0" justification="33"/>
   <TEXTEDITOR name="new text editor" id="5aeb7e75eb7c1fb0" memberName="txtSignal"
-              virtualName="" explicitFocusOrder="0" pos="136 200 240 24" initialText="00000000000000000000000000000000"
+              virtualName="" explicitFocusOrder="0" pos="184 200 120 24" initialText="0"
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <TEXTBUTTON name="new button" id="1d4f8611b9b47ffc" memberName="btnSendSignal"
@@ -402,7 +430,7 @@ BEGIN_JUCER_METADATA
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="33"/>
   <TEXTEDITOR name="new text editor" id="dcc50853dae51717" memberName="txtSetEa"
-              virtualName="" explicitFocusOrder="0" pos="144 256 232 24" initialText="4020"
+              virtualName="" explicitFocusOrder="0" pos="184 256 120 24" initialText="4020"
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <TEXTBUTTON name="btnReconfig" id="afc5b4297a3be9c8" memberName="btnReconfig"

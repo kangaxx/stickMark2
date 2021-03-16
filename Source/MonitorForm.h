@@ -32,6 +32,7 @@
 #include "StickServer.h"
 #include"WarningClient.h"
 #include"LabelDataManager.h"
+#include "PCI1230.h"
 #define MAX_MARKER_NUM 4
 #define INT_MARKER_SWITCH_OPEN 2
 #define INT_MARKER_SWITCH_CLOSE 2
@@ -49,16 +50,18 @@ using namespace commonfunction_c;
                                                                     //[/Comments]
 */
 class MonitorForm  : public juce::Component,
-                     public juce::Button::Listener
+                     public juce::Button::Listener,
+					 public juce::Timer
 {
 public:
     //==============================================================================
     MonitorForm ();
     ~MonitorForm() override;
-
+	void timerCallback() override;
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-
+	void HandleMessage(int flag, double & speed);
+	void HandleClientMessage(juce::String, HDataMessage* hmsg);
 	void ReconnectAll();
 	void resetPlc(std::string window, std::string message)
 	{
@@ -76,6 +79,9 @@ public:
 		if (gridMain->isInitialed())
 			redrawGrid();
 	}
+
+	//plc command with port num
+	void sendPlcCommand(int port);
     //[/UserMethods]
 
     void paint (juce::Graphics& g) override;
@@ -84,10 +90,12 @@ public:
 
 
 
+
+
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	ConfigureForm *configureForm;
-
+	juce::CriticalSection _finsLock;
 	//data Model
 	std::unique_ptr<tzGrid> gridMain;
 	struct gridDataInfo
@@ -140,7 +148,7 @@ private:
 	MainFormClient m_mfClient;
 	String _strCommuIP;
 	int64 _preReportTime;
-	CXMLConfig m_configFile;
+
 	int  m_iSupportCM5;
 	String m_rollName;
 	bool m_bNewUI = false;
@@ -163,14 +171,19 @@ private:
 	juce::int64 m_curEA[4];
 	juce::int64 m_sent2ServerIndex;
 	double m_preSentPos[2][2];
+	int m_nRollMarks[2][2];
+	int		_edition; //version
+	bool _bSupportMarkCode;
+	bool m_bUseLocal;
 	juce::int64 m_sentCount[2];
-	void HandleClientMessage(juce::String, HDataMessage* hmsg);
+
 	void CreateNewRoll();
 	void Save2MonthReport();
 	void SaveReport();
 	InterprocessStickServer sever;
 	bool m_bSupportStick_Remain;
 	std::vector<StickMarkInfo> m_stickInfoReserves;
+	int m_iUsePLCSpeed;
     //[/UserVariables]
 
     //==============================================================================

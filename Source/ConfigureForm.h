@@ -22,7 +22,10 @@
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
 #include "../hds/FastDelegate.h"
+#include "../hds/commonfunction_c.h"
+
 using namespace fastdelegate;
+using namespace commonfunction_c;
 //[/Headers]
 
 
@@ -47,6 +50,9 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
 	typedef FastDelegate2<std::string, std::string> SIGNAL_SS;
 	void setFunctionSS(SIGNAL_SS somefunc) { m_HiddenDelegateSS = somefunc; }
+	typedef FastDelegate1<int> SIGNAL_I;
+	void setFunctionI(SIGNAL_I somefunc) { m_HiddenDelegateI = somefunc; }
+	void updateMarkCount(int idx, int count);
     //[/UserMethods]
 
     void paint (juce::Graphics& g) override;
@@ -58,6 +64,7 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	SIGNAL_SS m_HiddenDelegateSS;
+	SIGNAL_I m_HiddenDelegateI;
     //[/UserVariables]
 
     //==============================================================================

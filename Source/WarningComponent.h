@@ -9,7 +9,7 @@ class WarningComponent :public juce::Component, public juce::Button::Listener
 public:
 	WarningComponent(){
 		
-		Confirm.reset(new juce::TextButton(L"ȷ��"));
+		Confirm.reset(new juce::TextButton(L"È·¶¨"));
 		Confirm->setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::lightgrey);
 		Confirm->setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::black);
 		Confirm->setBoundsRelative(0.4, 0.73, 0.5, 0.2);

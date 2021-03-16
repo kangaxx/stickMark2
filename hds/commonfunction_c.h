@@ -26,16 +26,29 @@ public:
     BaseFunctions(){m_FileName = ""; m_FilePath = "";}
     BaseFunctions(string fileName, string filePath=""):m_FileName(fileName),m_FilePath(filePath){}
     ~BaseFunctions(){}
-    static int GetWorkPath(char *dest); //get program run time path info!
-    static const char* getConfigPath(int mode=FPM_ALL); //mode : FPM_ALL,exec in the following order: SYSENV,PATHSTR,PATHWORK
+	static int GetWorkPath(char *dest);//get program run time path info!
+	static const char* getConfigPath(int mode = FPM_ALL); //mode : FPM_ALL,exec in the following order: SYSENV,PATHSTR,PATHWORK
     static string GetParaByName(string fileName, string name);//work for new type ini,ex: "password=123456";
     static string GetParaByName_safe(string fileName, string name);
     static string GetParaByLine(string fileName, int lineNum);//work for old type,just have value ex : "123456"
 
     static char *Int2Chars(int in, char *out, int size=DEFAULT_INTCHAR_SIZE);
     static int Chars2Int(const char *in, int size=DEFAULT_INTCHAR_SIZE);
-    static int Str2Int(string s);
-    static int Str2Int(string s, int i);
+    static int Str2Int(string s) {
+		Str2Int(s, 0);
+	}
+    static int Str2Int(string s, int i) {
+		int result = 0;
+		const char *c = &s[0];
+		while (*c != '\0') {
+			if (*c < 48 || *c > 57)
+				return i;
+			result *= 10;
+			result += *c - 48;
+			++c;
+		}
+		return result;
+	}
     static string time2str(time_t time);//transfer time 2 string
     static time_t str2time(string str); //transfer string 2 time,from '1970-01-01 00:08:00'
     //将日期转换位各种格式的int值，暂时只支持年加日（天数），后续增强各种功能。
