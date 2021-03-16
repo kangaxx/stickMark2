@@ -2177,7 +2177,11 @@ WriteCommData::WriteCommData(int maxCapacity) : _maxCapacity(maxCapacity), Threa
 
 WriteCommData::~WriteCommData()
 {
-
+	if (p_log != NULL)
+	{
+		delete p_log;
+		p_log = nullptr;
+	}
 
 }
 

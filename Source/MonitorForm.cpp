@@ -29,6 +29,7 @@
 WriteCommData* g_pWriteThread_codeTrans = nullptr;
 double _curRunningLenPos_codeTrans[4] = { -1.,-1.,-1.,-1. };
 double _preStickLenPos_codeTrans[4];
+extern bool _threadShouldExit;
 bool UnicodeToMB_CodeTrans(char*& pmb, const wchar_t* pun, int uLen)
 {
 	pmb = nullptr;
@@ -402,11 +403,27 @@ MonitorForm::MonitorForm ()
 MonitorForm::~MonitorForm()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	delete CLabelDM[0];
-	CLabelDM[0] = nullptr;
-	delete CLabelDM[1];
-	CLabelDM[1] = nullptr;
+	_threadShouldExit = true;
+	juce::Thread::sleep(1000);
+	if (CLabelDM[0] != NULL)
+	{
+		delete CLabelDM[0];
+		CLabelDM[0] = nullptr;
+	}
 
+	if (CLabelDM[1] != NULL)
+	{
+		delete CLabelDM[1];
+		CLabelDM[1] = nullptr;
+	}
+
+	if (g_pWriteThread_codeTrans != NULL)
+	{
+		g_pWriteThread_codeTrans->signalThreadShouldExit();
+		g_pWriteThread_codeTrans->stopThread(1000);
+		delete g_pWriteThread_codeTrans;
+		g_pWriteThread_codeTrans = nullptr;
+	}
     //[/Destructor_pre]
 
     btnConfigure = nullptr;
@@ -943,7 +960,8 @@ void MonitorForm::CreateNewRoll()
 			char* pmbType;
 			UnicodeToMB_CodeTrans(pmbType, szTitle.toUTF16(), szTitle.length());
 			fprintf(fp, "%s\n", pmbType);
-			delete[] pmbType;
+			if (pmbType != nullptr)
+				delete[] pmbType;
 
 			for (int i = 0; i < m_stickInfos.size(); i++)
 			{
@@ -954,7 +972,8 @@ void MonitorForm::CreateNewRoll()
 				fprintf(fp, "%f,", m_stickInfos[i].lenPos);
 				fprintf(fp, "%d,", m_stickInfos[i].EA);
 				fprintf(fp, "%d,", m_stickInfos[i].roadUser);
-				delete[] pmbType;
+				if (pmbType != nullptr)
+					delete[] pmbType;
 
 				char szTm[256] = { 0 };
 				juce::Time time(m_stickInfos[i].sendTime);
@@ -973,7 +992,8 @@ void MonitorForm::CreateNewRoll()
 					stick = String(juce::CharPointer_UTF8("\xe6\x9c\xaa\xe5\xae\x8c\xe6\x88\x90"));
 				UnicodeToMB_CodeTrans(pmbType, stick.toUTF16(), stick.length());
 				fprintf(fp, "%s\n", pmbType);
-				delete[] pmbType;
+				if (pmbType != nullptr)
+					delete[] pmbType;
 
 			}
 			fclose(fp);
