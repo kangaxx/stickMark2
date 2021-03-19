@@ -51,7 +51,8 @@ using namespace commonfunction_c;
 */
 class MonitorForm  : public juce::Component,
                      public juce::Button::Listener,
-					 public juce::Timer
+					 public juce::Timer,
+					 public juce::AsyncUpdater
 {
 public:
     //==============================================================================
@@ -82,6 +83,7 @@ public:
 
 	//plc command with port num
 	void sendPlcCommand(int port);
+	virtual void handleAsyncUpdate();
     //[/UserMethods]
 
     void paint (juce::Graphics& g) override;
@@ -176,6 +178,8 @@ private:
 	bool _bSupportMarkCode;
 	bool m_bUseLocal;
 	juce::int64 m_sentCount[2];
+	std::bitset<32> m_bState;
+	std::bitset<32> m_prebState;
 
 	void CreateNewRoll();
 	void Save2MonthReport();

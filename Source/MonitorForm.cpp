@@ -274,7 +274,7 @@ MonitorForm::MonitorForm ()
     addAndMakeVisible (txtPlcStatus.get());
     txtPlcStatus->setMultiLine (false);
     txtPlcStatus->setReturnKeyStartsNewLine (false);
-    txtPlcStatus->setReadOnly (false);
+    txtPlcStatus->setReadOnly (true);
     txtPlcStatus->setScrollbarsShown (true);
     txtPlcStatus->setCaretVisible (true);
     txtPlcStatus->setPopupMenuEnabled (true);
@@ -379,7 +379,7 @@ MonitorForm::MonitorForm ()
 	gridMain->setBounds(8, 100, 814 - 830 + getWidth(), 360);
 	txtWarnNum->setBounds(760, 48, getWidth() - 770, 24);
 	btnSave->setBounds(688, 8, getWidth() - 695, 24);
-
+	
 	String strCommuIP = "192.168.1.201";
 	int ret2 = g_configFile.GetCommuServerAddr(strCommuIP);
 	if (ret2 == 0)
@@ -408,7 +408,7 @@ MonitorForm::MonitorForm ()
 	bool conret = m_mfClient.connectToSocket(strCommuIP, 9000, 1000);
 
 	//连接主画面失败
-
+	
 	if (!conret)
 		AlertWindow::showMessageBox(AlertWindow::AlertIconType::InfoIcon, "", String(juce::CharPointer_UTF8("\xe8\xbf\x9e\xe6\x8e\xa5\xe4\xb8\xbb\xe7\x94\xbb\xe9\x9d\xa2\xe5\xa4\xb1\xe8\xb4\xa5")));
 	m_sent2ServerIndex = 0;
@@ -482,11 +482,11 @@ MonitorForm::MonitorForm ()
 	if (g_configFile.GetUIMode(styleUI))
 		m_bNewUI = styleUI;
 	else
-		AlertWindow::showMessageBox(AlertWindow::WarningIcon, L"配置项缺失主画面模式配置", L"");
+		AlertWindow::showMessageBox(AlertWindow::WarningIcon, String(juce::CharPointer_UTF8("\xe9\x85\x8d\xe7\xbd\xae\xe9\xa1\xb9\xe7\xbc\xba\xe5\xa4\xb1\xe4\xb8\xbb\xe7\x94\xbb\xe9\x9d\xa2\xe6\xa8\xa1\xe5\xbc\x8f\xe9\x85\x8d\xe7\xbd\xae")), L"");
 	LOGWT("UI消息方式m_bNewUI：%d", m_bNewUI);
 
 	g_pWriteThread_codeTrans = new WriteCommData();
-	g_pWriteThread_codeTrans->startThread();
+	g_pWriteThread_codeTrans->startThread(); //gxx
 	for (int i = 0; i < 4; i++)
 		preCmdTime[i] = Time::currentTimeMillis();
 
@@ -507,12 +507,7 @@ MonitorForm::MonitorForm ()
 
 	stickmarker->m_bLocalC4 = m_bUseLocal;
 	startTimer(5000);
-
-	// 心跳信号线程
-	//只有6003_X9 C2 尝试过
-	//std::thread th1(threadOfTimer);
-	//th1.detach();
-	//[/Constructor]
+	
 }
 
 MonitorForm::~MonitorForm()
@@ -541,6 +536,7 @@ MonitorForm::~MonitorForm()
 		delete g_pWriteThread_codeTrans;
 		g_pWriteThread_codeTrans = nullptr;
 	}
+
     //[/Destructor_pre]
 
     btnConfigure = nullptr;
@@ -568,11 +564,18 @@ MonitorForm::~MonitorForm()
 	if (dataModels != NULL) {
 		delete dataModels;
 	}
+	if (stickmarker != NULL)
+	{
+		stickmarker->signalThreadShouldExit();
+		stickmarker->stopThread(1000);
+		delete stickmarker;
+	}
     //[/Destructor]
 }
 
 void MonitorForm::timerCallback()
 {
+	
 	ReconnectAll();
 
 	juce::int64 curTime = Time::currentTimeMillis();
@@ -608,6 +611,7 @@ void MonitorForm::timerCallback()
 		g_stickNumCount_codeTrans.clear();
 	}
 	mute_codeTrans.exit();
+	
 }
 
 void MonitorForm::sendPlcCommand(int ioPort)
@@ -624,6 +628,14 @@ void MonitorForm::sendPlcCommand(int ioPort)
 		}
 
 	}
+}
+
+void MonitorForm::handleAsyncUpdate()
+{
+
+	if (m_prebState != m_bState)
+		repaint();
+	m_prebState = m_bState;
 }
 
 //==============================================================================
@@ -703,6 +715,14 @@ void MonitorForm::buttonClicked (juce::Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == btnPlcConnect.get())
     {
         //[UserButtonCode_btnPlcConnect] -- add your button handler code here..
+		_finsLock.enter();
+		stickmarker->Reconnect();
+		_finsLock.exit();
+
+		//stickmarker->transferfins->Disconnect();// UnInitialize();
+		LOGWT("重新连接");
+		juce::AlertWindow::showMessageBox(juce::AlertWindow::AlertIconType::InfoIcon, "", String(juce::CharPointer_UTF8("\xe5\xbc\x80\xe5\xa7\x8b\xe9\x87\x8d\xe8\xbf\x9ePLC")));
+
         //[/UserButtonCode_btnPlcConnect]
     }
 
@@ -967,6 +987,7 @@ void MonitorForm::HandleMessage(int flag, double& speed) //四联标信息
 }
 void MonitorForm::HandleClientMessage(juce::String host, HDataMessage* pMessage)
 {
+	/*
 	int iRoad = pMessage->data.iRoad;
 	StickMarkInfo tm;
 	int ioPort = -1;
@@ -1091,7 +1112,7 @@ void MonitorForm::HandleClientMessage(juce::String host, HDataMessage* pMessage)
 
 			_curRunningLenPos_codeTrans[tm.roadUser - 1] = pMessage->data.srcPos;
 
-			if (/*g_iUsePLCSpeed &&*/ dSpeed > 5.)
+			if (dSpeed > 5.)
 			{
 				juce::int64 diffT = juce::Time::getCurrentTime().toMilliseconds() - client.m_recTime;
 				if (diffT < 0) diffT = -diffT;
@@ -1205,6 +1226,7 @@ void MonitorForm::HandleClientMessage(juce::String host, HDataMessage* pMessage)
 
 		}
 	}
+	*/
 }
 
 void MonitorForm::ReconnectAll()

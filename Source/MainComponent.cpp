@@ -129,12 +129,6 @@ String  opt2str(TRANSER_OUT_LOGIC tol) {
 
 
 //[/MiscUserDefs]
-//void ReceivePlcData(Component* pwnd, String ip,const DataMessage& data)
-//{
-//	PLCComponent* plcComp = (PLCComponent*)pwnd;
-//
-//	plcComp->HandleAsysMessage(ip,data.addr, data._plcRegsData);
-//}
 int ProduceDefectCode(int code)
 {
 
@@ -802,12 +796,9 @@ void MainComponent::buttonClicked(juce::Button* buttonthatwasclicked) {
 
     }
 
-    if (buttonthatwasclicked == MarkInfo)
-    {
-        juce::DialogWindow::showDialog("", stickmarker, this, juce::Colours::white, true);
-    }
+
     
-    else if (buttonthatwasclicked == Reconnect)
+    if (buttonthatwasclicked == Reconnect)
     {
 		_finsLock.enter();
 		stickmarker->Reconnect();
@@ -2259,7 +2250,7 @@ bool WriteCommData::AddDebugData(const String& data)
 void MainComponent::timerCallback()
 {
 	ReconnectAll();
-
+	/*
 	juce::int64 curTime = Time::currentTimeMillis();
 	for (int i = 0; i < 4; ++i)
 	{
@@ -2296,6 +2287,7 @@ void MainComponent::timerCallback()
 		g_stickNumCount.clear();
 	}
 	mute.exit();
+	*/
 	
 }
 
